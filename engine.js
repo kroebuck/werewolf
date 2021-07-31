@@ -1,5 +1,6 @@
 const Player = require('./player');
 const Room = require('./room');
+const Game = require('./game');
 
 class Engine {
     constructor() {
@@ -49,6 +50,8 @@ class Engine {
         }
 
         this.players.push(p);
+
+        socket.emit('roles', Game.getAllRoles());
 
         console.log('user connected (' + this.players.length + ')');
 

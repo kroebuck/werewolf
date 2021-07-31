@@ -1,3 +1,5 @@
+const Game = require('./game');
+
 const ROOM_CODE_LENGTH = 4;
 const ROOM_MINIMUM_PLAYERS = 3;
 

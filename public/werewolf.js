@@ -1,6 +1,28 @@
 document.addEventListener('DOMContentLoaded', function () {
     var socket = io();
 
+    function addHeaders(table) {
+        var row = table.insertRow();
+        let headerTitles = ['Role', 'Description', 'Action(s)', 'Count'];
+
+        for (let i = 0; i < headerTitles.length; i++) {
+            var cell = row.insertCell();
+            cell.appendChild(document.createTextNode(headerTitles[i]));
+        }
+    }
+
+    socket.on('roles', (res) => {
+        var table = document.createElement('table');
+        addHeaders(table);
+        
+        for (var key in res) {
+            if (res.hasOwnProperty(key)) {
+                var row = table.insertRow();
+                
+            }
+        }
+    });
+
     document.getElementById('join_room').onclick = () => {
         var name = document.getElementById('char_name').value.trim();
         document.getElementById('char_name').value = name;
@@ -41,8 +63,9 @@ document.addEventListener('DOMContentLoaded', function () {
             console.log('something went wrong. room not created. try again.');
         } else {
             // room created. join room (as host).
-            document.getElementById('room_code_div').style.visibility = "visible";
+            document.getElementById('room_code_div').style.display = "block";
             document.getElementById('room_code_div').innerHTML = "Room code: " + res.roomCode;
+            document.getElementById('roles_div').style.display = "block";
         }
     })
 
