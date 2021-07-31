@@ -16,6 +16,10 @@ class Player {
     setRoom(room) {
         this.room = room;
     }
+
+    setRole(role) {
+        this.role = role;
+    }
 }
 
 module.exports = Player;
