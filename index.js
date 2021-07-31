@@ -5,6 +5,11 @@ const server = http.createServer(app);
 const { Server } = require("socket.io");
 const io = new Server(server);
 const Engine = require('./engine');
+const Game = require('./game');
+
+console.log(Game.getAllRoles());
+var g = new Game();
+g.setRoles(['baby','baby', 'vampire']);
 
 var engine = new Engine();
 

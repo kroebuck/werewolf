@@ -1,0 +1,15 @@
+.role-name {
+	float:  left;
+}
+
+.role-info {
+	float:  right;
+}
+
+.clear {
+	clear: both;
+}
+
+#roles_div {
+	width:  400px;
+}

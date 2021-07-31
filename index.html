@@ -7,30 +7,36 @@
         </title>
         <script src="/socket.io/socket.io.js"></script>
         <script src="werewolf.js"></script>
+        <link rel="stylesheet" href="style.css">
     </head>
     <body>
         <div id="user_create_div">
-            <input type="text" placeholder="Name" id="char_name" />
-        </div>
-
-        <div id="room_join_div">
+            <label for="char_name">Name</label><br>
+            <input type="text" placeholder="Name" id="char_name" /><br>
+            <label for="room_code">Room Code</label><br>
             <input type="text" placeholder="Room code" id="room_code">
-            <input type="button" id="join_room" value="Join room"/>
-        </div>
-
-        <div id="room_create_div">
+            <input type="button" id="join_room" value="Join room"/><br>
             <input type="button" id="create_room" value="Create new room">
         </div>
 
-        <div id="game_start_div" display=none> <!--if user is host, set display visible-->
+        <div id="room_wait_div" style="display: none;"> 
+            <div id="player_name_div"></div>
+            <div id="room_code_div"></div>
+        </div>
+
+        <div id="game_start_div" style="display: none"> 
             <input type="button" id="start_game" value="Start the game" disabled/>
         </div>
 
-        <div id="room_code_div" style="display: none;"> <!--set visible if room successfully created-->
-            ROOM CODE
-        </div>
+        <div id="roles_div" style="display: none;"></div>
 
-        <div id="roles_div" style="display: none"> <!--set visible to host if room successfully created-->
+        <div id="role_template" style="display: none">
+            <div>
+                <div class="role-name"></div>
+                <div class="role-info"></div>
+            </div>
+            <div class="clear"></div>
+            <div class="role-desc"></div>
         </div>
     </body>
 </html>
