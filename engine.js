@@ -21,8 +21,20 @@ class Engine {
     }
 
     createNewRoom() {
-        var room = new Room();
-        room.setRoomCode('bag');
+        let room = new Room();
+        let code = Room.generateCode();
+        let generateAttempts = 0;
+        
+        while (this.findRoomByCode(code)) {
+            code = Room.generateCode();
+            generateAttempts++;
+
+            if (generateAttempts > 10) {
+                return null;
+            }
+        }
+        
+        room.setRoomCode(code);
         this.rooms.push(room);
 
         return room;
@@ -31,6 +43,7 @@ class Engine {
     newSocket(socket) {
         var p = new Player(socket);
 
+        // should be done when player is in room
         if (this.players.length == 0) {
             p.setHost(true);
         }
@@ -39,15 +52,16 @@ class Engine {
 
         console.log('user connected (' + this.players.length + ')');
 
+        // move this to players.js?
         socket.on('disconnect', () => {
-            console.log('user disconnected');
-
             // remove user from players array
             for (let i = 0; i < this.players.length; i++) {
                 if (this.players[i].socket == socket) {
                     this.players.splice(i, 1);
                 }
             }
+
+            console.log('user disconnected (' + this.players.length + ')');
 
             // remove user from players array?
                 // if game has not yet begun, can just remove and let them rejoin and try again
@@ -60,40 +74,59 @@ class Engine {
                 // if yes -> set their appropriate info from old theUser obj (e.g., name)
         });
 
-        socket.on('nameSubmit', (name) => {
-            var validName = this.rooms[0].checkName(name);
+        // removed nameSubmit request from client-side -> update to whatever new request is (join room, create room)
+        socket.on('roomJoin', (msg) => {
+            var isValidRoom = false;
+            var isValidName = false;
 
-            socket.emit('nameRes', { 'taken': !validName });
+            var room = this.findRoomByCode(msg.roomCode);
 
-            if (validName) {
-                p.name = name;
-                this.rooms[0].addPlayer(p);
+            if (room) {
+                isValidRoom = true;
+                isValidName = room.checkName(msg.name);
 
-                // Check if game is ready to start
-                // Req: 3 or more players, every user has valid name
-                if (this.players.length >= 3) {
-                    let isReady = true;
+                if (isValidName) {
+                    p.name = msg.name;
+                    room.addPlayer(p);
+                    console.log(p.name + " joined room " + room.code);
 
-                    this.players.forEach(us => {
-                        if (!us.hasOwnProperty('name')) {
-                            isReady = false;
-                        }
-                    })
-
-                    this.players[0].socket.emit('gameStartRes', { 'isReady': isReady });
+                    if (room.checkIsGameReady()) {
+                        room.players.forEach(us => {
+                            if (us.host) {
+                                us.socket.emit('gameStartRes', { 'isReady': true });
+                            }
+                        });
+                    }
                 }
             }
 
-            console.log(p.name);
+            socket.emit('roomJoinStatus', { 'isValidName': isValidName, 'isValidRoom': isValidRoom });
         });
 
+        socket.on('roomCreate', (name) => {
+            let isValidRoom = false;
+            let room = this.createNewRoom();
+
+            if (room) {
+                isValidRoom = true;
+                p.name = name;
+                p.host = true;
+                room.addPlayer(p);
+                socket.emit('roomCreateStatus', { 'wasRoomCreated': isValidRoom, 'roomCode': room.code });
+            } else {
+                socket.emit('roomCreateStatus', { 'wasRoomCreated': isValidRoom });
+            }           
+        })
+
         socket.on('gameStart', () => {
-            console.log('game start')
-            // Start game
+            if (p.room != null && p.host) {
+                // Start game
             // allow host to decide on what roles to use
                 // session remembers last chosen
                 // have default setting to just decide randomly
             // assign roles to everyone randomly
+            }
+            
         });
     }
 }
