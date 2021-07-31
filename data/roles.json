@@ -1,14 +1,69 @@
 {
-	"baby": {
-		"id": "baby",
-		"name": "The Baby",
-		"description": "Who many call Kevin, it is a foul beast that wets itself and causes endless torment for those around it",
-		"actions": ["swap", "poo"]
+	"werewolf": {
+		"id": "werewolf",
+		"name": "Werewolf",
+		"description": "They look like Archie.",
+		"team": "werewolf",
+		"turn": 1,
+		"actions": [
+			{
+				"action": "viewOthers", 
+				"condition": 
+				{ 
+					"type": "count", 
+					"test": "lt", 
+					"value": 2, 
+					"outcome": {"action": "checkMiddle", "count": 1}
+				}
+			}
+		]
 	},
-	"vampire": {
-		"id": "vampire",
-		"name": "The Bloodsucker",
-		"description": "Their name is Karen.",
-		"actions": ["suck", "dontsuck", "fail"]
+	"seer": {
+		"id": "seer",
+		"name": "Seer",
+		"description": "Can see another player's role card or two middle cards.",
+		"team": "village",
+		"turn": 2,
+		"actions": [
+			{
+				"action": "viewPlayerRole"
+			},
+			{
+				"action": "viewMiddleRoles",
+				"count": 2
+			}
+		]
+	},
+	"robber": {
+		"id": "robber",
+		"name": "Robber",
+		"description": "May swap roles with another player and view new role. The robber is on the team of the card he takes.",
+		"team": "village",
+		"turn": 3,
+		"actions": [
+			{
+				"action": "swap",
+				"target": "self"
+			}
+		]
+	},
+	"troublemaker": {
+		"id": "troublemaker",
+		"name": "Troublemaker",
+		"description": "May swap roles of two other players. Do not view either role.",
+		"team": "village",
+		"turn": 4,
+		"actions": [
+			{
+				"action": "swap",
+				"target": "other"
+			}
+		]
+	},
+	"villager": {
+		"id": "villager",
+		"name": "Villager",
+		"description": "The ultimate beta male. Can't do anything.",
+		"team": "village"
 	}
 }
