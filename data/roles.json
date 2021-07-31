@@ -1,0 +1,14 @@
+{
+	"baby": {
+		"id": "baby",
+		"name": "The Baby",
+		"description": "Who many call Kevin, it is a foul beast that wets itself and causes endless torment for those around it",
+		"actions": ["swap", "poo"]
+	},
+	"vampire": {
+		"id": "vampire",
+		"name": "The Bloodsucker",
+		"description": "Their name is Karen.",
+		"actions": ["suck", "dontsuck", "fail"]
+	}
+}
