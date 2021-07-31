@@ -5,8 +5,16 @@ const { allowedNodeEnvironmentFlags } = require('process');
 const server = http.createServer(app);
 const { Server } = require("socket.io");
 const io = new Server(server);
+const Player = require('./player');
+const Room = require('./room');
 
-var users = [];
+var players = [];
+var rooms = [];
+
+// Temp set up test room
+var room = new Room();
+room.setRoomCode('bag');
+rooms.push(room);
 
 // allows HTML file to access files in the public folder
 app.use(express.static('public'));
@@ -15,33 +23,41 @@ app.get('/', (req, res) => {
     res.sendFile(__dirname + '/index.html');
 });
 
-io.on('connection', (socket) => {
-    var theUser = {
-        'socket': socket,
-        'host': false
-    };
-
-    if (users.length == 0) {
-        theUser.host = true;
+function findRoomByCode(code) {
+    for (var i = rooms.length - 1; i >= 0; i--) {
+        if(rooms[i].code == code) {
+            return rooms[i];
+        }
     }
 
-    users.push(theUser);
+    return null;
+}
 
-    console.log('user connected (' + users.length + ')');
+io.on('connection', (socket) => {
+
+    var p = new Player(socket);
+
+    if (players.length == 0) {
+        p.setHost(true);
+    }
+
+    players.push(p);
+
+    console.log('user connected (' + players.length + ')');
 
     socket.on('disconnect', () => {
         console.log('user disconnected');
 
-        // remove user from users array
-        for (let i = 0; i < users.length; i++) {
-            if (users[i].socket == socket) {
-                users.splice(i, 1);
+        // remove user from players array
+        for (let i = 0; i < players.length; i++) {
+            if (players[i].socket == socket) {
+                players.splice(i, 1);
             }
         }
 
-        // remove user from users array?
+        // remove user from players array?
             // if game has not yet begun, can just remove and let them rejoin and try again
-            // else leave theUser obj in users array
+            // else leave theUser obj in players array
                 // timeout after some period? boot user from game
         // store for a given user a session (which has a cookie)
             // store in theUser
@@ -51,35 +67,30 @@ io.on('connection', (socket) => {
     });
 
     socket.on('nameSubmit', (name) => {
-        var nameTaken = false;
+        validName = room.checkName(name);
 
-        users.forEach(us => {
-            if (us.name == name) {
-                nameTaken = true;
-            }
-        });
+        socket.emit('nameRes', { 'taken': !validName });
 
-        socket.emit('nameRes', { 'taken': nameTaken });
-
-        if (!nameTaken) {
-            theUser.name = name;
+        if (validName) {
+            p.name = name;
+            room.addPlayer(p);
 
             // Check if game is ready to start
             // Req: 3 or more players, every user has valid name
-            if (users.length >= 3) {
+            if (players.length >= 3) {
                 let isReady = true;
 
-                users.forEach(us => {
+                players.forEach(us => {
                     if (!us.hasOwnProperty('name')) {
                         isReady = false;
                     }
                 })
 
-                users[0].socket.emit('gameStartRes', { 'isReady': isReady });
+                players[0].socket.emit('gameStartRes', { 'isReady': isReady });
             }
         }
 
-        console.log(theUser.name);
+        console.log(p.name);
     });
 
     socket.on('gameStart', () => {
