@@ -75,11 +75,20 @@ io.on('connection', (socket) => {
                     }
                 })
 
-                socket.emit('gameStartRes', { 'isReady': isReady });
+                users[0].socket.emit('gameStartRes', { 'isReady': isReady });
             }
         }
 
         console.log(theUser.name);
+    });
+
+    socket.on('gameStart', () => {
+        console.log('game start')
+        // Start game
+        // allow host to decide on what roles to use
+            // session remembers last chosen
+            // have default setting to just decide randomly
+        // assign roles to everyone randomly
     });
 });
 
