@@ -1,27 +1,29 @@
 class Room {
-	constructor() {
-		this.players = [];
-		this.playerCount = 0;
-	}
+    constructor() {
+        this.players = [];
+        this.playerCount = 0;
+    }
 
-	setRoomCode(code) {
-		this.roomCode = code;
-	}
+    setRoomCode(code) {
+        this.roomCode = code;
+    }
 
-	addPlayer(player) {
-		this.players.push(player);
-		this.playerCount++;
-	}
+    addPlayer(player) {
+        this.players.push(player);
+        this.playerCount++;
+    }
 
-	checkName(name) {
+    checkName(name) {
+        var validName = true;
+
         this.players.forEach(p => {
             if (p.name == name) {
-                return false;
+                validName = false;
             }
         });
 
-        return true;
-	}
+        return validName;
+    }
 }
 
 module.exports = Room;
