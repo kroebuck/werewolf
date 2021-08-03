@@ -3,15 +3,22 @@ var player = {
     'roomCode': null
 }
 
+var playerNamesInRoom;
+
+var game;
+var roles;
+
 document.addEventListener('DOMContentLoaded', function () {
+    game = new Game();
+
     //
     // Socket
     //
 
     var socket = io();
 
-    socket.on('roles', (roles) => {
-        console.log(roles);
+    socket.on('roles', (r) => {
+        roles = r;
         let rolesDiv = document.getElementById('roles_div');
         rolesDiv.innerHTML = '';
         
@@ -28,11 +35,16 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
+    socket.on('roomPlayersStatus', (res) => {
+        playerNamesInRoom = res.playerNames;
+        displayPlayers(res.playerNames);
+    });
+
     socket.on('roomJoinStatus', (res) => {
         if (!res.isValidRoom) {
-            console.log("no room corresponding to that code");
+            console.log("No room corresponding to that code.");
         } else if (!res.isValidName) {
-            console.log("name is taken by someone in specified room");
+            console.log("Name is taken by someone in specified room. Try another name.");
         }
 
         if (res.isValidRoom && res.isValidName) {
@@ -46,9 +58,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
     socket.on('roomCreateStatus', (res) => {
         if (!res.wasRoomCreated) {
-            console.log('something went wrong. room not created. try again.');
+            console.log('Something went wrong, room not created. Try again.');
         } else {
             // room created. join room (as host).
+            document.getElementById('game_start_div').style.display = null;
             player.name = document.getElementById('char_name').value;
             player.roomCode = res.roomCode;
 
@@ -60,6 +73,40 @@ document.addEventListener('DOMContentLoaded', function () {
         if (res.isReady) {
             document.getElementById('start_game').disabled = false;
         }
+    });
+
+    socket.on('gameUpdate', (msg) => {
+        console.log('Role acquired');
+        let actionsContainerDiv = document.getElementById('actions_container');
+        actionsContainerDiv.style.display = null;
+        actionsContainerDiv.innerHTML = "<b>" + msg.role.name + " Actions</b>";
+    });
+
+    socket.on('chooseActions', (res) => {
+        displayPlayers(res.playerNames);
+
+        let actionsContainerDiv = document.getElementById('actions_container');
+
+        res.availableActions.forEach(a => {
+            actionsContainerDiv.innerHTML += '<br>';
+            let actionBtn = document.createElement("button");
+            actionBtn.id = "action_" + a.action;
+            actionBtn.innerText = a.action;
+            actionsContainerDiv.appendChild(actionBtn);
+        });
+
+        // Do not do below inside previous loop because functions won't bind to each button properly
+        res.availableActions.forEach(a => {
+            document.getElementById('action_' + a.action).onclick = () => {game[a.action]()};
+        });
+
+        /* users emit to server: e.g.,
+        socket.emit('playerActionChoice')
+            {
+				"action": "viewPlayerRole",
+                "selection": "<playerName>"
+			}
+        */
     });
 
     //
@@ -76,7 +123,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (name != '' || roomCode != '') {
             socket.emit('roomJoin', { 'name': name, 'roomCode': roomCode });
         } else {
-            console.log('you must enter a name and room code')
+            console.log('You must enter a name and room code.')
         }
     };
 
@@ -91,8 +138,12 @@ document.addEventListener('DOMContentLoaded', function () {
     };
 
     // Need to rework this
+    // Allow host to select which roles will be in the game
+        // add increment/decrement buttons next to each role
+        // Do not allow start game until playerCount+3 roles have been chosen (this is a vanilla game rule, can adjust later on).
     document.getElementById('start_game').onclick = () => {
-        socket.emit('gameStart', true);
+        let chosenRoles = ["seer", "seer", "seer", "seer"];
+        socket.emit('gameStart', { 'roles': chosenRoles});
     }
 
     function displayWaitingRoom() {
@@ -101,6 +152,13 @@ document.addEventListener('DOMContentLoaded', function () {
         document.getElementById('user_create_div').style.display = 'none';
         document.getElementById('room_wait_div').style.display = null;
         document.getElementById('roles_div').style.display = null;
+    }
+
+    function displayPlayers(playerNames) {
+        document.getElementById('room_players_container').style.display = null;
+        let roomPlayersDiv = document.getElementById('room_players_list');
+        roomPlayersDiv.innerHTML = "";
+        roomPlayersDiv.innerHTML = playerNames.join("<br>");
     }
 
 });

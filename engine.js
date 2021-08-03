@@ -6,9 +6,6 @@ class Engine {
     constructor() {
         this.players = [];
         this.rooms = [];
-
-        // Temp
-        this.createNewRoom();
     }
 
     findRoomByCode(code) {
@@ -44,18 +41,15 @@ class Engine {
     newSocket(socket) {
         var p = new Player(socket);
 
-        // should be done when player is in room
-        if (this.players.length == 0) {
-            p.setHost(true);
-        }
-
         this.players.push(p);
-
-        socket.emit('roles', Game.getAllRoles());
 
         console.log('user connected (' + this.players.length + ')');
 
+        socket.emit('roles', Game.getAllRoles());
+
+        // TODO
         // move this to players.js?
+        // sessions? remove player from room/server arrays after some period of time?
         socket.on('disconnect', () => {
             // remove user from players array
             for (let i = 0; i < this.players.length; i++) {
@@ -77,7 +71,6 @@ class Engine {
                 // if yes -> set their appropriate info from old theUser obj (e.g., name)
         });
 
-        // removed nameSubmit request from client-side -> update to whatever new request is (join room, create room)
         socket.on('roomJoin', (msg) => {
             var isValidRoom = false;
             var isValidName = false;
@@ -93,6 +86,8 @@ class Engine {
                     room.addPlayer(p);
                     console.log(p.name + " joined room " + room.code);
 
+                    this.broadcastPlayersArray(room);
+
                     if (room.checkIsGameReady()) {
                         room.players.forEach(us => {
                             if (us.host) {
@@ -106,7 +101,8 @@ class Engine {
             socket.emit('roomJoinStatus', { 'isValidName': isValidName, 'isValidRoom': isValidRoom });
         });
 
-        socket.on('roomCreate', (name) => {
+        socket.on('roomCreate', (msg) => {
+            let name = msg.name;
             let isValidRoom = false;
             let room = this.createNewRoom();
 
@@ -116,20 +112,41 @@ class Engine {
                 p.host = true;
                 room.addPlayer(p);
                 socket.emit('roomCreateStatus', { 'wasRoomCreated': isValidRoom, 'roomCode': room.code });
+
+                this.broadcastPlayersArray(room);
+
+                if (room.checkIsGameReady()) {
+                    p.socket.emit('gameStartRes', { 'isReady': true });
+                }
             } else {
                 socket.emit('roomCreateStatus', { 'wasRoomCreated': isValidRoom });
             }           
         })
 
-        socket.on('gameStart', () => {
+        socket.on('gameStart', (obj) => {
             if (p.room != null && p.host) {
-                // Start game
-            // allow host to decide on what roles to use
-                // session remembers last chosen
-                // have default setting to just decide randomly
-            // assign roles to everyone randomly
+                var game = new Game();
+                game.setRoles(obj.roles);
+                game.setPlayers(p.room.players);
+                game.startGame();
             }
-            
+        });
+
+        // somewhere socket listener listens for actions responses and logs count
+        // on count increment, check if ready to continue, then continueNight()
+        /*socket.on('playerActionChoice', (res) => {
+            chooseActionResponses++;
+
+            if (cAR == players.count) {
+                continueNight(); //process actions in queue order, update client side game info (all they'll see is role order for all roles present in game)
+            }
+        })*/
+    }
+
+    broadcastPlayersArray(room) {
+        let playerNames = room.getPlayerNamesArray();
+        room.players.forEach(p => {
+            p.socket.emit('roomPlayersStatus', { 'playerNames': playerNames });
         });
     }
 }

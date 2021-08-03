@@ -6,6 +6,7 @@
             One Night Werewolf
         </title>
         <script src="/socket.io/socket.io.js"></script>
+        <script src="game.js"></script>
         <script src="werewolf.js"></script>
         <link rel="stylesheet" href="style.css">
     </head>
@@ -37,6 +38,14 @@
             </div>
             <div class="clear"></div>
             <div class="role-desc"></div>
+        </div>
+        <br>
+        <div id="room_players_container" style="display: none">
+            <div><b>Players</b></div>
+            <div id="room_players_list"></div>
+        </div>
+        <br>
+        <div id="actions_container" style="display: none">
         </div>
     </body>
 </html>

@@ -4,16 +4,14 @@
 		"name": "Werewolf",
 		"description": "They look like Archie.",
 		"team": "werewolf",
-		"turn": 1,
+		"order": 1,
 		"actions": [
 			{
-				"action": "viewOthers", 
+				"action": "revealAllOfRole",
 				"condition": 
 				{ 
-					"type": "count", 
-					"test": "lt", 
-					"value": 2, 
-					"outcome": {"action": "checkMiddle", "count": 1}
+					"test": "r.count < 2",
+					"outcome": {"action": "getRandomMiddleRoles", "count": 1}
 				}
 			}
 		]
@@ -23,13 +21,13 @@
 		"name": "Seer",
 		"description": "Can see another player's role card or two middle cards.",
 		"team": "village",
-		"turn": 2,
+		"order": 2,
 		"actions": [
 			{
 				"action": "viewPlayerRole"
 			},
 			{
-				"action": "viewMiddleRoles",
+				"action": "getRandomMiddleRoles",
 				"count": 2
 			}
 		]
@@ -39,7 +37,7 @@
 		"name": "Robber",
 		"description": "May swap roles with another player and view new role. The robber is on the team of the card he takes.",
 		"team": "village",
-		"turn": 3,
+		"order": 3,
 		"actions": [
 			{
 				"action": "swap",
@@ -52,7 +50,7 @@
 		"name": "Troublemaker",
 		"description": "May swap roles of two other players. Do not view either role.",
 		"team": "village",
-		"turn": 4,
+		"order": 4,
 		"actions": [
 			{
 				"action": "swap",
@@ -65,5 +63,28 @@
 		"name": "Villager",
 		"description": "The ultimate beta male. Can't do anything.",
 		"team": "village"
+	},
+	"twoActions": {
+		"id": "two",
+		"name": "Two",
+		"description": "Can perform two actions. Not one or the other.",
+		"team": "village",
+		"order": 4,
+		"actions": [
+			[
+				{
+					"action": "swap",
+					"target": "other"
+				},
+				{
+					"action": "swap",
+					"target": "self"
+				}
+			],
+			{
+				"action": "poo",
+				"target": "self"
+			}
+		]
 	}
 }

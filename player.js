@@ -18,6 +18,9 @@ class Player {
     }
 
     setRole(role) {
+		if (!this.role) {
+			this.originalRole = role;
+		}
         this.role = role;
     }
 }

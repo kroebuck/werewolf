@@ -1,7 +1,7 @@
 const Game = require('./game');
 
 const ROOM_CODE_LENGTH = 4;
-const ROOM_MINIMUM_PLAYERS = 3;
+const ROOM_MINIMUM_PLAYERS = 1; // Vanilla game is 3
 
 class Room {
     constructor() {
@@ -25,10 +25,19 @@ class Room {
     }
 
     addPlayer(player) {
-		player.setRoom = this;
+		player.setRoom(this);
         this.players.push(player);
         this.playerCount++;
     }
+
+	getPlayerNamesArray() {
+		let playerNames = [];
+		this.players.forEach(p => {
+			playerNames.push(p.name);
+		})
+
+		return playerNames;
+	}
 
     checkName(name) {
         var validName = true;
