@@ -1,12 +1,13 @@
 const Game = require('./game');
 
 const ROOM_CODE_LENGTH = 4;
-const ROOM_MINIMUM_PLAYERS = 1; // Vanilla game is 3
+const ROOM_MINIMUM_PLAYERS = 2; // Vanilla game is 3
 
 class Room {
     constructor() {
         this.players = [];
         this.playerCount = 0;
+		this.completeFunctions = [];
     }
 
 	static generateCode() {
@@ -29,6 +30,40 @@ class Room {
         this.players.push(player);
         this.playerCount++;
     }
+
+	removePlayer(player) {
+		player.setRoom(null);
+		let index = this.players.indexOf(player);
+		this.players.splice(index, 1);
+		this.playerCount--;
+
+		if(this.players.length < 1) {
+			this.shutdownRoom();
+		}
+	}
+
+	shutdownRoom() {
+		this.completeFunctions.forEach(cb => {
+			cb();		
+		});
+	}
+
+	// When Room is instantiated, a deleteRoom() method is passed in from engine.js
+	onComplete(cbFunc) {
+		if(cbFunc && typeof(cbFunc) === 'function') {
+			this.completeFunctions.push(cbFunc);
+		}
+	}
+
+	getHost() {
+		for (let i = 0; i < this.playerCount; i++) {
+			if (this.players[i].host) {
+				return this.players[i];
+			}
+		}
+
+		return null;
+	}
 
 	getPlayerNamesArray() {
 		let playerNames = [];

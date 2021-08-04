@@ -1,5 +1,5 @@
 const roles = require('./data/roles.json');
-const preprocess = ["werewolf"]; // if a role's action(s) does not require player input, put role id here
+const preprocess = ["revealAllOfRole"]; // if a role's action(s) does not require player input, put role id here
 
 class Game {
     constructor() {
@@ -55,6 +55,8 @@ class Game {
             });
         }
 
+        this.actionChoiceResponses = 0; // used in engine.js to know when to call continueNight()
+
         this.generateQueue();
         this.startNight();
     }
@@ -68,14 +70,6 @@ class Game {
             p.socket.emit('chooseActions', { 'availableActions': p.role.actions, 'playerNames': playerNames});
 
         });
-
-        // respond with choice
-            //
-        
-        // loop through players
-            //loop through actions doAction()
-            //emit socket showing players their options
-            //they choose something, which sends request up to server
     }
 
     preprocessActions(p, actions) {
@@ -101,32 +95,23 @@ class Game {
         return playerInfo;
     }
 
-    // in engine.js:
-    // somewhere socket listener listens for actions responses and logs count
-    // on count increment, check if ready to continue, then continueNight()
-    /*socket.on('playerActionChoice', (res) => {
-        chooseActionResponses++;
+    //process actions in queue order, update client side game info (all they'll see is role order for all roles present in game)
+    continueNight() {
+        this.queue.forEach(p => {
+            if (p.actionChoice) {
+                this.doAction(p, p.actionChoice);
+            }
+        })
+    }
 
-        if (cAR == players.count) {
-            continueNight(); //process actions in queue order, update client side game info (all they'll see is role order for all roles present in game)
-        }
-    })
-    // they vote on who to kill (if anyone)
+    // After continueNight():
+    // players vote on who to kill (if anyone)
         // reveal role of person killed
     // display winning team
-    */
-
-    // somewhere socket listener listens for actions responses and logs count
-    // on count increment, check if ready to continue, then continueNight()
-
-    continueNight() {
-        // process players action in queue order
-        // robber's turn
-            // doAction(p, a, actionParams)
-    }
 
     doAction(player, action, params) {
         let r = null;
+
         if(params) {
             r = eval(action.action + '(player, action, params)');
         } else {
@@ -148,6 +133,8 @@ class Game {
 
         let roleToReveal = player.role.id;
 
+        // action.role not implemented yet
+        // minion would be a role that needs this
         if(action.role) {
             roleToReveal = action.role;
         }
@@ -161,9 +148,17 @@ class Game {
         return { 'count': members.length, 'members': members };
     }
 
-    // seer
+    // seer, robber
     viewPlayerRole(player, action, params) {
-        return this.lookUpPlayerByName(params.name).role.id;
+        let nameRoleMap = new Map();
+
+        this.players.forEach(p => {
+            if (action.selection.includes(p.name)) {
+                nameRoleMap.set(p.name, p.role.name)
+            }
+        })
+
+        return nameRoleMap;
         // p.socket.emit('gameUpdate', {'role': player.role.name});
     }
 

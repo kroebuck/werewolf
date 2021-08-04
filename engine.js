@@ -38,6 +38,11 @@ class Engine {
         return room;
     }
 
+    deleteRoom(room) {
+        let index = this.rooms.indexOf(room);
+        this.rooms.splice(index, 1);
+    }
+
     newSocket(socket) {
         var p = new Player(socket);
 
@@ -59,6 +64,18 @@ class Engine {
             }
 
             console.log('user disconnected (' + this.players.length + ')');
+
+            if (p.room) {
+                let room = p.room
+                room.removePlayer(p);
+                
+                let host = room.getHost();
+
+                if (room.checkIsGameReady() == false) {
+                    console.log('emit: game not ready');
+                    host.socket.emit('gameStartStatus', { "isReady": room.checkIsGameReady() });
+                }
+            }
 
             // remove user from players array?
                 // if game has not yet begun, can just remove and let them rejoin and try again
@@ -91,7 +108,7 @@ class Engine {
                     if (room.checkIsGameReady()) {
                         room.players.forEach(us => {
                             if (us.host) {
-                                us.socket.emit('gameStartRes', { 'isReady': true });
+                                us.socket.emit('gameStartStatus', { 'isReady': true });
                             }
                         });
                     }
@@ -105,6 +122,11 @@ class Engine {
             let name = msg.name;
             let isValidRoom = false;
             let room = this.createNewRoom();
+            room.onComplete(() => {
+                console.log('Room empty');
+                // delete room here where ever you put it
+                this.deleteRoom(room);
+            });
 
             if (room) {
                 isValidRoom = true;
@@ -116,7 +138,7 @@ class Engine {
                 this.broadcastPlayersArray(room);
 
                 if (room.checkIsGameReady()) {
-                    p.socket.emit('gameStartRes', { 'isReady': true });
+                    p.socket.emit('gameStartStatus', { 'isReady': true });
                 }
             } else {
                 socket.emit('roomCreateStatus', { 'wasRoomCreated': isValidRoom });
@@ -132,15 +154,19 @@ class Engine {
             }
         });
 
-        // somewhere socket listener listens for actions responses and logs count
-        // on count increment, check if ready to continue, then continueNight()
-        /*socket.on('playerActionChoice', (res) => {
-            chooseActionResponses++;
+        socket.on('actionChoice', (msg) => {
+            if (game) {
+                game.actionChoiceResponses++;
 
-            if (cAR == players.count) {
-                continueNight(); //process actions in queue order, update client side game info (all they'll see is role order for all roles present in game)
+                p.setActionChoice(msg);
+
+                if (game.actionChoiceResponses == game.players.length) {
+                    game.continueNight();
+                }
+            } else {
+                console.log("something went wrong");
             }
-        })*/
+        });
     }
 
     broadcastPlayersArray(room) {

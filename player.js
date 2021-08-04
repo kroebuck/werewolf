@@ -23,6 +23,10 @@ class Player {
 		}
         this.role = role;
     }
+
+	setActionChoice(actionChoice) {
+		this.actionChoice = actionChoice;
+	}
 }
 
 module.exports = Player;

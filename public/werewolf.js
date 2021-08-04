@@ -1,6 +1,8 @@
 var player = {
     'name': null,
-    'roomCode': null
+    'roomCode': null,
+    'role': null,
+    'actions': null
 }
 
 var playerNamesInRoom;
@@ -9,13 +11,13 @@ var game;
 var roles;
 
 document.addEventListener('DOMContentLoaded', function () {
-    game = new Game();
-
     //
     // Socket
     //
 
     var socket = io();
+
+    game = new Game(socket);
 
     socket.on('roles', (r) => {
         roles = r;
@@ -69,14 +71,18 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    socket.on('gameStartRes', (res) => {
-        if (res.isReady) {
-            document.getElementById('start_game').disabled = false;
+    socket.on('gameStartStatus', (res) => {
+        console.log(res.isReady);
+        if (res.isReady == true) {
+            document.getElementById('start_game_button').disabled = false;
+        } else {
+            document.getElementById('start_game_button').disabled = true;
         }
     });
 
     socket.on('gameUpdate', (msg) => {
         console.log('Role acquired');
+        player.role = msg.role;
         let actionsContainerDiv = document.getElementById('actions_container');
         actionsContainerDiv.style.display = null;
         actionsContainerDiv.innerHTML = "<b>" + msg.role.name + " Actions</b>";
@@ -87,18 +93,32 @@ document.addEventListener('DOMContentLoaded', function () {
 
         let actionsContainerDiv = document.getElementById('actions_container');
 
-        res.availableActions.forEach(a => {
+        player.actions = res.availableActions;
+        console.log(player.actions == true);
+
+        if (res.availableActions) {
+            res.availableActions.forEach(a => {
+                actionsContainerDiv.innerHTML += '<br>';
+                let actionBtn = document.createElement("button");
+                actionBtn.id = "action_" + a.action;
+                actionBtn.innerText = a.action; // add nice action names to json file so we can put them here
+                actionsContainerDiv.appendChild(actionBtn);
+            });
+    
+            // Do not do below inside previous loop because functions won't bind to each button properly
+            res.availableActions.forEach(a => {
+                document.getElementById('action_' + a.action).onclick = () => {game[a.action]()};
+            });
+        } else {
             actionsContainerDiv.innerHTML += '<br>';
             let actionBtn = document.createElement("button");
-            actionBtn.id = "action_" + a.action;
-            actionBtn.innerText = a.action;
+            actionBtn.id = "action_none_button";
+            actionBtn.innerText = "Continue sleeping";
             actionsContainerDiv.appendChild(actionBtn);
-        });
-
-        // Do not do below inside previous loop because functions won't bind to each button properly
-        res.availableActions.forEach(a => {
-            document.getElementById('action_' + a.action).onclick = () => {game[a.action]()};
-        });
+            actionBtn.onclick = () => {
+                game.none();
+            }
+        }
 
         /* users emit to server: e.g.,
         socket.emit('playerActionChoice')
@@ -141,8 +161,9 @@ document.addEventListener('DOMContentLoaded', function () {
     // Allow host to select which roles will be in the game
         // add increment/decrement buttons next to each role
         // Do not allow start game until playerCount+3 roles have been chosen (this is a vanilla game rule, can adjust later on).
-    document.getElementById('start_game').onclick = () => {
-        let chosenRoles = ["seer", "seer", "seer", "seer"];
+    document.getElementById('start_game_button').onclick = () => {
+        // let chosenRoles = ["robber", "robber", "robber", "robber", "robber"];
+        let chosenRoles = ["villager", "villager", "villager", "villager", "villager"];
         socket.emit('gameStart', { 'roles': chosenRoles});
     }
 

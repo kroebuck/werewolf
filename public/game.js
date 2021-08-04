@@ -1,12 +1,13 @@
-// var playerNames;
-
 // var player = {
 //     'name': null,
-//     'roomCode': null
+//     'roomCode': null,
+//     'role': null,
+//     'action': null
 // }
 
 class Game {
-    constructor() {
+    constructor(socket) {
+        this.socket = socket;
 
     }
 
@@ -14,8 +15,91 @@ class Game {
         // no info needed
     }
 
-    // generate checkboxes for all other players in room
+    // seer
     viewPlayerRole() {
+        document.getElementById('actions_container').innerHTML = "View Player Role:<br>";
+
+        this.generateChooseOtherPlayersDiv();
+
+        let reqCount = 1;
+
+        let submitBtn = this.generateSubmitButton();
+
+        submitBtn.onclick = () => {
+            let selections = this.getPlayerSelections();
+
+            if (selections.length == reqCount) {
+                console.log("Player selection made!");
+                // tack on selections to action obj instead?
+                let chosenAction = this.player.actions[0];
+                chosenAction.selection = selections;
+                this.socket.emit('actionChoice', chosenAction);
+
+                this.player.actionSelection = selections;
+                this.socket.emit('actionChoice', { "action": "viewPlayerRole", "selection": selections });
+            } else {
+                console.log("You must select only 1 player.");
+            }
+        }
+    }
+
+    // seer
+    getRandomMiddleRoles() {
+        console.log("View middle cards.");
+        this.socket.emit('actionChoice', { "action": "getRandomMiddleRoles" });
+    }
+
+    // robber, troublemaker
+    swap() {
+        document.getElementById('actions_container').innerHTML = "Swap Roles:<br>";
+
+        this.generateChooseOtherPlayersDiv();
+
+        let submitBtn = this.generateSubmitButton();
+        let nothingBtn = this.generateDoNothingButton();
+
+        // Swap roles
+        submitBtn.onclick = () => {
+            let selections = this.getPlayerSelections();
+
+            let reqCount = 2;
+
+            if (player.actions[0].target == "self") {
+                reqCount = 1;
+            }
+
+            if (selections.length == reqCount) {
+                console.log("Player selections made!");
+                submitBtn.disabled = true;
+                nothingBtn.disabled = true;
+                this.socket.emit('actionChoice', { "action": "swap", "playerSelections": selections });
+            } else {
+                console.log(`You must select ${reqCount} players to swap.`);
+            }
+        }
+
+        // Do not swap roles
+        nothingBtn.onclick = () => {
+            console.log("No swap enacted.");
+            submitBtn.disabled = true;
+            nothingBtn.disabled = true;
+            this.socket.emit('actionChoice', { "action": "none" });
+        }
+    }
+
+    none() {
+        console.log("Do nothing");
+        document.getElementById("actions_container").innerHTML = "";
+        this.socket.emit('actionChoice', { "action": "none" }); // dont send?
+    }
+
+    generateActionNameDiv(action) {
+        let actionDiv = document.createElement("div");
+        actionDiv.innerHTML = action;
+        document.body.appendChild(actionDiv);
+    }
+
+    generateChooseOtherPlayersDiv() {
         let playerChooseContainer = document.createElement("div");
 
         playerNamesInRoom.forEach(name => {
@@ -35,19 +119,43 @@ class Game {
             }
         });
 
-        document.body.appendChild(playerChooseContainer);
+        document.getElementById("actions_container").appendChild(playerChooseContainer);
     }
 
-    getRandomMiddleRoles() {
-        // no info needed
+    generateSubmitButton() {
+        let submitBtn = document.createElement("button");
+        submitBtn.id = "action_submit_button";
+        submitBtn.innerText = "Submit";
+
+        let actionsContainer = document.getElementById("actions_container");
+        actionsContainer.appendChild(submitBtn);
+
+        return submitBtn;
     }
 
-    swap() {
-        // decide whether or not to do this action
-            // if yes
-                // if robber
-                    //choose one other player
-                // if troublemaker
-                    // choose two other players
+    generateDoNothingButton() {
+        let nothingBtn = document.createElement("button");
+        nothingBtn.id = "action_nothing_button";
+        nothingBtn.innerText = "Do Nothing";
+
+        let actionsContainer = document.getElementById("actions_container");
+        actionsContainer.appendChild(nothingBtn);
+
+        return nothingBtn;
+    }
+
+    getPlayerSelections() {
+        let selections = [];
+
+        playerNamesInRoom.forEach(name => {
+            if (name != player.name) {
+                let id = "checkbox_" + name;
+                if (document.getElementById(id).checked) {
+                    selections.push(name);
+                }
+            }
+        });
+
+        return selections;
     }
 }
