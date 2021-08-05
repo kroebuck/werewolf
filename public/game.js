@@ -2,7 +2,7 @@
 //     'name': null,
 //     'roomCode': null,
 //     'role': null,
-//     'action': null
+//     'actions': null
 // }
 
 class Game {
@@ -21,7 +21,15 @@ class Game {
 
         this.generateChooseOtherPlayersDiv();
 
+        let action = this.getActionObj("viewPlayerRole");
+
+        console.log(action);
+
         let reqCount = 1;
+
+        if (action.count) {
+            reqCount = action.count;
+        }
 
         let submitBtn = this.generateSubmitButton();
 
@@ -29,24 +37,23 @@ class Game {
             let selections = this.getPlayerSelections();
 
             if (selections.length == reqCount) {
-                console.log("Player selection made!");
-                // tack on selections to action obj instead?
-                let chosenAction = this.player.actions[0];
-                chosenAction.selection = selections;
-                this.socket.emit('actionChoice', chosenAction);
-
-                this.player.actionSelection = selections;
-                this.socket.emit('actionChoice', { "action": "viewPlayerRole", "selection": selections });
+                console.log("Player selection(s) made!");
+                submitBtn.disabled = true;
+                action.selection = selections;
+                this.socket.emit('actionChoice', { "action": action });
             } else {
-                console.log("You must select only 1 player.");
+                console.log(`You must select ${reqCount} player(s).`);
             }
         }
     }
 
     // seer
     getRandomMiddleRoles() {
-        console.log("View middle cards.");
-        this.socket.emit('actionChoice', { "action": "getRandomMiddleRoles" });
+        document.getElementById('actions_container').innerHTML = "View Middle Roles:<br>";
+
+        let action = this.getActionObj("getRandomMiddleRoles");
+
+        this.socket.emit('actionChoice', { "action": action });
     }
 
     // robber, troublemaker
@@ -55,8 +62,9 @@ class Game {
 
         this.generateChooseOtherPlayersDiv();
 
+        let action = this.getActionObj("swap");
+
         let submitBtn = this.generateSubmitButton();
-        let nothingBtn = this.generateDoNothingButton();
 
         // Swap roles
         submitBtn.onclick = () => {
@@ -64,33 +72,54 @@ class Game {
 
             let reqCount = 2;
 
-            if (player.actions[0].target == "self") {
+            if (action.target == "self") {
                 reqCount = 1;
             }
 
             if (selections.length == reqCount) {
-                console.log("Player selections made!");
+                console.log("Player selection(s) made!");
                 submitBtn.disabled = true;
-                nothingBtn.disabled = true;
-                this.socket.emit('actionChoice', { "action": "swap", "playerSelections": selections });
+                action.selection = selections;
+                this.socket.emit('actionChoice', { "action": action });
             } else {
                 console.log(`You must select ${reqCount} players to swap.`);
             }
         }
-
-        // Do not swap roles
-        nothingBtn.onclick = () => {
-            console.log("No swap enacted.");
-            submitBtn.disabled = true;
-            nothingBtn.disabled = true;
-            this.socket.emit('actionChoice', { "action": "none" });
-        }
     }
 
-    none() {
-        console.log("Do nothing");
-        document.getElementById("actions_container").innerHTML = "";
-        this.socket.emit('actionChoice', { "action": "none" }); // dont send?
+    doNothing() {
+        document.getElementById('actions_container').innerHTML = "Do nothing:<br>";
+
+        let action = this.getActionObj("doNothing");
+
+        this.socket.emit('actionChoice', { "action": action });
+    }
+
+    displayActionResult(actionResult) {
+        let actionsContainerDiv = document.getElementById("actions_container");
+
+        if(actionResult.nameRolePairs) {
+            let map = actionResult.nameRolePairs;
+            for (var key in map) {
+                if (map.hasOwnProperty(key)) {
+                    console.log(key + ": " + map[key]);
+                }
+            }
+        }
+        
+        if (actionResult.middleRoles) {
+            actionResult.middleRoles.forEach(role => {
+                console.log(role.name);
+            })
+        }
+        
+        if (actionResult.members) {
+            console.log("The others are:");
+
+            actionResult.members.forEach(name => {
+                console.log(name);
+            })
+        }
     }
 
     generateActionNameDiv(action) {
@@ -157,5 +186,18 @@ class Game {
         });
 
         return selections;
+    }
+
+    // input the string 'player.actions.action'
+    getActionObj(action) {
+        if (player.role.actions) {
+            for (let i = 0; i < player.role.actions.length; i++) {
+                if (player.role.actions[i].action == action) {
+                    return player.role.actions[i];
+                }
+            }
+        }
+
+        return null;
     }
 }

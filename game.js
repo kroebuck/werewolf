@@ -1,5 +1,5 @@
 const roles = require('./data/roles.json');
-const preprocess = ["revealAllOfRole"]; // if a role's action(s) does not require player input, put role id here
+const preprocess = ["werewolf"]; // if a role's action(s) does not require player input, put role id here
 
 class Game {
     constructor() {
@@ -14,7 +14,6 @@ class Game {
         roleChoices.forEach(rc => {
             this.availRoles.push(roles[rc]);
         });
-        //console.log(this.availRoles);
     }
 
     setPlayers(players) {
@@ -24,7 +23,7 @@ class Game {
     lookUpPlayerByName(name) {
         for (let i = 0; i < this.players.length; i++) {
             if (name == this.players[i].name) {
-                return players[i];
+                return this.players[i];
             }
         }
 
@@ -32,11 +31,7 @@ class Game {
     }
 
     generateQueue() {
-        console.log(this.players);
-
         this.queue = [...this.players].sort((a, b) => a.role.order - b.role.order);
-
-        console.log(this.queue);
     }
 
     startGame() {
@@ -48,8 +43,9 @@ class Game {
                 let roleIndex = Math.floor(Math.random() * this.availRoles.length);
                 let role = this.availRoles[roleIndex];
                 p.setRole(role);
-                // Send the player role info
-                p.socket.emit('gameUpdate', { 'role': role });
+                // Send the player role info and who else is in the game
+                let playerNames = this.players[0].room.getPlayerNamesArray();
+                p.socket.emit('gameUpdate', { 'role': role, 'playerNames': playerNames});
                 // Remove assigned role from available roles
                 this.availRoles.splice(roleIndex, 1);
             });
@@ -62,12 +58,11 @@ class Game {
     }
 
     startNight() {
-        let playerNames = this.players[0].room.getPlayerNamesArray();
-
         this.queue.forEach(p => {
-           //let playerInfo = this.preprocessActions(p, p.role.actions);
+           let playerInfo = this.preprocessActions(p, p.role.actions);
 
-            p.socket.emit('chooseActions', { 'availableActions': p.role.actions, 'playerNames': playerNames});
+           p.socket.emit('chooseActions', { 'playerInfo': playerInfo });
+            // p.socket.emit('chooseActions', { 'availableActions': p.role.actions });
 
         });
     }
@@ -85,7 +80,7 @@ class Game {
                 playerInfo.data = { ...playerInfo.data, ...acts.data };
             } else {
                 if (preprocess.includes(p.role.id)) {
-                    let r = this.doAction(p, a);
+                    playerInfo.data = this.doAction(p, a);
                 } else {
                     playerInfo.actions.push(a);
                 }
@@ -99,9 +94,18 @@ class Game {
     continueNight() {
         this.queue.forEach(p => {
             if (p.actionChoice) {
-                this.doAction(p, p.actionChoice);
+                let result = this.doAction(p, p.actionChoice);
+
+                if (result != null) {
+                    p.socket.emit('actionResult', result);
+                }
             }
-        })
+        });
+
+        this.queue.forEach(p => {
+            console.log(p.name + ": " + p.role.name);
+            p.socket.emit('nightEnded');
+        });
     }
 
     // After continueNight():
@@ -109,14 +113,8 @@ class Game {
         // reveal role of person killed
     // display winning team
 
-    doAction(player, action, params) {
-        let r = null;
-
-        if(params) {
-            r = eval(action.action + '(player, action, params)');
-        } else {
-            r = eval(action.action + '(player, action)');
-        }
+    doAction(player, action) {
+        let r = eval('this.' + action.action + '(player, action)');
 
         if (action.condition) {
             if (eval(action.condition.test)) {
@@ -141,28 +139,28 @@ class Game {
 
         this.players.forEach(p => {
             if (p.role.id == roleToReveal) {
-                members.push(p);
+                members.push(p.name);
             }
         });
 
-        return { 'count': members.length, 'members': members };
+        return { "members": members, "count": members.length };
     }
 
     // seer, robber
-    viewPlayerRole(player, action, params) {
-        let nameRoleMap = new Map();
+    viewPlayerRole(player, action) {
+        let nameRolePairs = {};
 
         this.players.forEach(p => {
             if (action.selection.includes(p.name)) {
-                nameRoleMap.set(p.name, p.role.name)
+                nameRolePairs[p.name] = p.role.name;
             }
-        })
+        });
 
-        return nameRoleMap;
-        // p.socket.emit('gameUpdate', {'role': player.role.name});
+        return { "nameRolePairs": nameRolePairs };
     }
 
     // seer, werewolf (condition)
+    // simply add role.name instead?
     getRandomMiddleRoles(player, action) {
         let middleRoles = [];
 
@@ -176,52 +174,38 @@ class Game {
             availRolesCopy.splice(roleIndex, 1);
         }
 
-        return middleRoles;
-
-        // p.socket.emit('gameUpdate', { 'middleRoles': middleRoles });
+        return { "middleRoles": middleRoles };
     }
 
     // troublemaker, robber
-    swap(player, action, params) {
-        let p1 = this.lookUpPlayerByName(params.player1Name);
-        let p2 = this.lookUpPlayerByName(params.player1Name);
-        temp = p1.role;
-        p1.role = p2.role;
-        p2.role = temp;
+    swap(player, action) {
+        var p1 = null;
+        var p2 = null;
 
-        // below should probably not be in this method, so as to keep it general
-        // if (player === p1 || player === p2) {
-        //     return player.role.id;
-        // }
-
-        // p.socket.emit('gameUpdate', { 'role': p.role });
-    }
-
-    swapEric(player, action, params) {
-        let p1 = null;
-        let p2 = null;
-
-        if(action.target == 'self') {
+        if (action.target == "self") {
             p1 = player;
-            p2 = this.lookUpPlayerByName(params.selection);
-        } else if (action.target == 'other' && typeof(params.selection) == 'array') {
-            p1 = this.lookUpPlayerByName(params.selection[0]);
-            p2 = this.lookUpPlayerByName(params.selection[1]);
+            p2 = this.lookUpPlayerByName(action.selection[0]);
+            // Since we want to show robber their new role, get p2's role and THEN swap roles.
+            var newRole = this.viewPlayerRole(p1, action);
+        } else if (action.target == "other") {
+            p1 = this.lookUpPlayerByName(action.selection[0]);
+            p2 = this.lookUpPlayerByName(action.selection[1]);
         }
 
-        temp = p1.role;
+        let temp = p1.role;
         p1.role = p2.role;
         p2.role = temp;
 
-        // below should probably not be in this method, so as to keep it general
-        // if (player === p1 || player === p2) {
-        //     return player.role.id;
-        // }
-
-        // p.socket.emit('gameUpdate', { 'role': p.role });
+        if (action.target == "self") {
+            return newRole;
+        } else if (action.target == "other") {
+            return null;
+        }
     }
 
-
+    doNothing(player, action) {
+        return null;
+    }
 
 }
 

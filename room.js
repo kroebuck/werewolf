@@ -8,6 +8,7 @@ class Room {
         this.players = [];
         this.playerCount = 0;
 		this.completeFunctions = [];
+		this.game = null;
     }
 
 	static generateCode() {
@@ -24,6 +25,10 @@ class Room {
     setRoomCode(code) {
         this.code = code;
     }
+
+	setGame(game) {
+		this.game = game;
+	}
 
     addPlayer(player) {
 		player.setRoom(this);
@@ -43,6 +48,10 @@ class Room {
 	}
 
 	shutdownRoom() {
+		this.players.forEach(p => {
+			p.setRoom(null);
+		});
+
 		this.completeFunctions.forEach(cb => {
 			cb();		
 		});

@@ -65,15 +65,21 @@ class Engine {
 
             console.log('user disconnected (' + this.players.length + ')');
 
+            // update the room object
             if (p.room) {
                 let room = p.room
-                room.removePlayer(p);
-                
-                let host = room.getHost();
 
-                if (room.checkIsGameReady() == false) {
-                    console.log('emit: game not ready');
-                    host.socket.emit('gameStartStatus', { "isReady": room.checkIsGameReady() });
+                if (p.host) {
+                    room.shutdownRoom();
+                } else {
+                    room.removePlayer(p);
+
+                    let host = room.getHost();
+
+                    if (room.checkIsGameReady() == false) {
+                        console.log('emit: game not ready');
+                        host.socket.emit('gameStartStatus', { "isReady": room.checkIsGameReady() });
+                    }
                 }
             }
 
@@ -148,6 +154,7 @@ class Engine {
         socket.on('gameStart', (obj) => {
             if (p.room != null && p.host) {
                 var game = new Game();
+                p.room.setGame(game);
                 game.setRoles(obj.roles);
                 game.setPlayers(p.room.players);
                 game.startGame();
@@ -155,10 +162,12 @@ class Engine {
         });
 
         socket.on('actionChoice', (msg) => {
+            let game = p.room.game;
+
             if (game) {
                 game.actionChoiceResponses++;
 
-                p.setActionChoice(msg);
+                p.setActionChoice(msg.action);
 
                 if (game.actionChoiceResponses == game.players.length) {
                     game.continueNight();

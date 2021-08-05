@@ -72,7 +72,6 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     socket.on('gameStartStatus', (res) => {
-        console.log(res.isReady);
         if (res.isReady == true) {
             document.getElementById('start_game_button').disabled = false;
         } else {
@@ -80,53 +79,51 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
+    // this event occurs before 'chooseActions'.
+    // We could just preprocess any actions that require it and then send one single role/action event down.
     socket.on('gameUpdate', (msg) => {
-        console.log('Role acquired');
+        playerNamesInRoom = msg.playerNames;
+        displayPlayers(msg.playerNames);
+
         player.role = msg.role;
+        console.log('Role acquired: ' + msg.role.name);
         let actionsContainerDiv = document.getElementById('actions_container');
         actionsContainerDiv.style.display = null;
         actionsContainerDiv.innerHTML = "<b>" + msg.role.name + " Actions</b>";
     });
 
-    socket.on('chooseActions', (res) => {
-        displayPlayers(res.playerNames);
-
+    // Preprocess actions and then combine this with 'gameUpdate' event?
+    socket.on('chooseActions', (msg) => {
         let actionsContainerDiv = document.getElementById('actions_container');
 
-        player.actions = res.availableActions;
-        console.log(player.actions == true);
+        if (Object.keys(msg.playerInfo.data).length === 0) {
+            player.actions = msg.playerInfo.actions;
 
-        if (res.availableActions) {
-            res.availableActions.forEach(a => {
-                actionsContainerDiv.innerHTML += '<br>';
-                let actionBtn = document.createElement("button");
-                actionBtn.id = "action_" + a.action;
-                actionBtn.innerText = a.action; // add nice action names to json file so we can put them here
-                actionsContainerDiv.appendChild(actionBtn);
-            });
-    
-            // Do not do below inside previous loop because functions won't bind to each button properly
-            res.availableActions.forEach(a => {
-                document.getElementById('action_' + a.action).onclick = () => {game[a.action]()};
-            });
-        } else {
-            actionsContainerDiv.innerHTML += '<br>';
-            let actionBtn = document.createElement("button");
-            actionBtn.id = "action_none_button";
-            actionBtn.innerText = "Continue sleeping";
-            actionsContainerDiv.appendChild(actionBtn);
-            actionBtn.onclick = () => {
-                game.none();
+            if (player.actions) {
+                player.actions.forEach(a => {
+                    actionsContainerDiv.innerHTML += '<br>';
+                    let actionBtn = document.createElement("button");
+                    actionBtn.id = "action_" + a.action;
+                    actionBtn.innerText = a.action; // add nice action names to json file so we can put them here
+                    actionsContainerDiv.appendChild(actionBtn);
+                });
+            
+                // Do not do below inside previous loop because functions won't bind to each button properly
+                player.actions.forEach(a => {
+                    document.getElementById('action_' + a.action).onclick = () => {game[a.action]()};
+                });
             }
+        } else {
+            game.displayActionResult(msg.playerInfo.data);
         }
+    });
 
-        /* users emit to server: e.g.,
-        socket.emit('playerActionChoice')
-            {
-				"action": "viewPlayerRole",
-                "selection": "<playerName>"
-			}
-        */
+    socket.on('actionResult', (res) => {
+        game.displayActionResult(res);
+    });
+
+    socket.on('nightEnded', () => {
+        console.log("Night has ended. Choose who to kill, if anyone.");
     });
 
     //
@@ -162,8 +159,11 @@ document.addEventListener('DOMContentLoaded', function () {
         // add increment/decrement buttons next to each role
         // Do not allow start game until playerCount+3 roles have been chosen (this is a vanilla game rule, can adjust later on).
     document.getElementById('start_game_button').onclick = () => {
-        // let chosenRoles = ["robber", "robber", "robber", "robber", "robber"];
-        let chosenRoles = ["villager", "villager", "villager", "villager", "villager"];
+        //let chosenRoles = ["robber", "robber", "robber", "robber", "robber"];
+        //let chosenRoles = ["seer", "seer", "seer", "seer", "seer"];
+        // let chosenRoles = ["villager", "villager", "villager", "villager", "villager"];
+        let chosenRoles = ["werewolf", "werewolf", "werewolf", "werewolf", "werewolf"];
+        document.getElementById('start_game_button').disabled = true;
         socket.emit('gameStart', { 'roles': chosenRoles});
     }
 
@@ -181,5 +181,4 @@ document.addEventListener('DOMContentLoaded', function () {
         roomPlayersDiv.innerHTML = "";
         roomPlayersDiv.innerHTML = playerNames.join("<br>");
     }
-
 });

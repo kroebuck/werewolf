@@ -2,7 +2,7 @@
 	"werewolf": {
 		"id": "werewolf",
 		"name": "Werewolf",
-		"description": "They look like Archie.",
+		"description": "At night, all Werewolves open their eyes and look for other werewolves. If no one else opens their eyes, the other Werewolves are in the center. If there is only one Werewolf in the game, the Werewolf may view one center card",
 		"team": "werewolf",
 		"order": 1,
 		"actions": [
@@ -19,7 +19,7 @@
 	"seer": {
 		"id": "seer",
 		"name": "Seer",
-		"description": "Can see another player's role card or two middle cards.",
+		"description": "At night, the Seer may look either at one other player’s card or at two of the center cards, but does not move them",
 		"team": "village",
 		"order": 2,
 		"actions": [
@@ -35,55 +35,43 @@
 	"robber": {
 		"id": "robber",
 		"name": "Robber",
-		"description": "May swap roles with another player and view new role. The robber is on the team of the card he takes.",
+		"description": "At night, the Robber may choose to rob a card from another player and place his Robber card where the other card was. Then the Robber looks at his new card. The player who receives the Robber card is on the village team. The Robber is on the team of the card he takes, however, he does not do the action of his new role at night.",
 		"team": "village",
 		"order": 3,
 		"actions": [
 			{
 				"action": "swap",
 				"target": "self"
+			},
+			{
+				"action": "doNothing"
 			}
 		]
 	},
 	"troublemaker": {
 		"id": "troublemaker",
 		"name": "Troublemaker",
-		"description": "May swap roles of two other players. Do not view either role.",
+		"description": "At night, the Troublemaker may switch the cards of two other players without looking at those cards. The players who receive a different card are now the role (and team) of their new card, even though they don’t know what role that is until the end of the game.",
 		"team": "village",
 		"order": 4,
 		"actions": [
 			{
 				"action": "swap",
 				"target": "other"
+			},
+			{
+				"action": "doNothing"
 			}
 		]
 	},
 	"villager": {
 		"id": "villager",
 		"name": "Villager",
-		"description": "The ultimate beta male. Can't do anything.",
-		"team": "village"
-	},
-	"twoActions": {
-		"id": "two",
-		"name": "Two",
-		"description": "Can perform two actions. Not one or the other.",
+		"description": "The Villager has no special abilities, but he is definitely not a werewolf. Players may often claim to be a Villager.",
 		"team": "village",
-		"order": 4,
 		"actions": [
-			[
-				{
-					"action": "swap",
-					"target": "other"
-				},
-				{
-					"action": "swap",
-					"target": "self"
-				}
-			],
 			{
-				"action": "poo",
-				"target": "self"
+				"action": "doNothing"
 			}
 		]
 	}
