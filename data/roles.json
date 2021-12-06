@@ -8,10 +8,14 @@
 		"actions": [
 			{
 				"action": "revealAllOfRole",
+				"actionName": "Reveal",
 				"condition": 
 				{ 
 					"test": "r.count < 2",
-					"outcome": {"action": "getRandomMiddleRoles", "count": 1}
+					"outcome": {
+						"action": "getRandomMiddleRoles", 
+						"count": 1
+					}
 				}
 			}
 		]
@@ -24,10 +28,12 @@
 		"order": 2,
 		"actions": [
 			{
-				"action": "viewPlayerRole"
+				"action": "viewPlayerRole",
+				"actionName": "View Player Role"
 			},
 			{
 				"action": "getRandomMiddleRoles",
+				"actionName": "View Middle Roles",
 				"count": 2
 			}
 		]
@@ -41,10 +47,12 @@
 		"actions": [
 			{
 				"action": "swap",
+				"actionName": "Swap",
 				"target": "self"
 			},
 			{
-				"action": "doNothing"
+				"action": "doNothing",
+				"actionName": "Continue Sleeping"
 			}
 		]
 	},
@@ -57,10 +65,12 @@
 		"actions": [
 			{
 				"action": "swap",
+				"actionName": "Swap",
 				"target": "other"
 			},
 			{
-				"action": "doNothing"
+				"action": "doNothing",
+				"actionName": "Continue Sleeping"
 			}
 		]
 	},
@@ -71,7 +81,8 @@
 		"team": "village",
 		"actions": [
 			{
-				"action": "doNothing"
+				"action": "doNothing",
+				"actionName": "Continue Sleeping"
 			}
 		]
 	}

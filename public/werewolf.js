@@ -1,3 +1,5 @@
+// Client side
+
 var player = {
     'name': null,
     'roomCode': null,
@@ -87,6 +89,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
         player.role = msg.role;
         console.log('Role acquired: ' + msg.role.name);
+
+        let playerRoleDiv = document.getElementById("player_role_div");
+        playerRoleDiv.style.display = null;
+        playerRoleDiv.innerHTML = "Role: " + msg.role.name;
+
+        document.getElementById('roles_div').style.display = "none";
+
         let actionsContainerDiv = document.getElementById('actions_container');
         actionsContainerDiv.style.display = null;
         actionsContainerDiv.innerHTML = "<b>" + msg.role.name + " Actions</b>";
@@ -95,7 +104,9 @@ document.addEventListener('DOMContentLoaded', function () {
     // Preprocess actions and then combine this with 'gameUpdate' event?
     socket.on('chooseActions', (msg) => {
         let actionsContainerDiv = document.getElementById('actions_container');
+        actionsContainerDiv.style.display = null;
 
+        // Display actions to player. Initial if statement checks if action is preprocess or not.
         if (Object.keys(msg.playerInfo.data).length === 0) {
             player.actions = msg.playerInfo.actions;
 
@@ -104,7 +115,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     actionsContainerDiv.innerHTML += '<br>';
                     let actionBtn = document.createElement("button");
                     actionBtn.id = "action_" + a.action;
-                    actionBtn.innerText = a.action; // add nice action names to json file so we can put them here
+                    actionBtn.innerText = a.actionName;
                     actionsContainerDiv.appendChild(actionBtn);
                 });
             
@@ -114,16 +125,32 @@ document.addEventListener('DOMContentLoaded', function () {
                 });
             }
         } else {
+            // data from pre-processed actions
             game.displayActionResult(msg.playerInfo.data);
+
+            let nothingBtn = game.generateDoNothingButton();
+            nothingBtn.onclick = () => {
+                nothingBtn.disabled = true;
+                nothingBtn.style.display = "none";
+                socket.emit('actionChoice');
+            };
         }
     });
 
     socket.on('actionResult', (res) => {
+        console.log(res);
         game.displayActionResult(res);
     });
 
     socket.on('nightEnded', () => {
         console.log("Night has ended. Choose who to kill, if anyone.");
+        game.displayPlayerToKillOptions();
+    });
+
+    socket.on('gameResults', (msg) => {
+        // 'gameResults', { "playersToBeKilled": playersToBeKilled, "winner": winner }
+        console.log(msg.winner + " wins");
+        game.displayGameResults(msg);
     });
 
     //
@@ -157,13 +184,16 @@ document.addEventListener('DOMContentLoaded', function () {
     // Need to rework this
     // Allow host to select which roles will be in the game
         // add increment/decrement buttons next to each role
-        // Do not allow start game until playerCount+3 roles have been chosen (this is a vanilla game rule, can adjust later on).
+        // Do not allow start game until (playerCount + game.MIDDLE_ROLE_COUNT) roles have been chosen (this is a vanilla game rule, can adjust later on).
     document.getElementById('start_game_button').onclick = () => {
         //let chosenRoles = ["robber", "robber", "robber", "robber", "robber"];
-        //let chosenRoles = ["seer", "seer", "seer", "seer", "seer"];
-        // let chosenRoles = ["villager", "villager", "villager", "villager", "villager"];
-        let chosenRoles = ["werewolf", "werewolf", "werewolf", "werewolf", "werewolf"];
+        // let chosenRoles = ["seer", "seer", "seer", "seer", "seer"];
+        let chosenRoles = ["werewolf", "werewolf", "villager", "villager", "villager"];
+        // let chosenRoles = ["werewolf", "werewolf", "werewolf", "werewolf", "werewolf"];
+
+        document.getElementById("game_start_div").style.display = "none";
         document.getElementById('start_game_button').disabled = true;
+        
         socket.emit('gameStart', { 'roles': chosenRoles});
     }
 

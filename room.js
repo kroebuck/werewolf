@@ -1,3 +1,5 @@
+// Server side
+
 const Game = require('./game');
 
 const ROOM_CODE_LENGTH = 4;
@@ -14,6 +16,7 @@ class Room {
 	static generateCode() {
 		let roomCode = '';
 
+		// Each character is a randomly chosen capital letter.
 		for (let i = 0; i < ROOM_CODE_LENGTH; i++) {
 			let letter = String.fromCharCode(65 + Math.random() * 26);
 			roomCode += letter;
@@ -57,7 +60,8 @@ class Room {
 		});
 	}
 
-	// When Room is instantiated, a deleteRoom() method is passed in from engine.js
+	// When Room is instantiated, a deleteRoom() method is passed in from engine.js.
+	// This allows us to call a method in engine.js from here.
 	onComplete(cbFunc) {
 		if(cbFunc && typeof(cbFunc) === 'function') {
 			this.completeFunctions.push(cbFunc);
@@ -86,8 +90,10 @@ class Room {
     checkName(name) {
         var validName = true;
 
+        name = name.toUpperCase();
+
         this.players.forEach(p => {
-            if (p.name == name) {
+            if (p.name.toUpperCase() == name) {
                 validName = false;
 				return false;
             }
@@ -102,6 +108,13 @@ class Room {
 		}
 
 		return false;
+	}
+
+	// currently unused
+	emitToAll(event, arg) {
+		this.players.forEach(p => {
+			p.socket.emit(event, arg);
+		});
 	}
 }
 

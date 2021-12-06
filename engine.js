@@ -1,3 +1,5 @@
+// Server side
+
 const Player = require('./player');
 const Room = require('./room');
 const Game = require('./game');
@@ -167,13 +169,33 @@ class Engine {
             if (game) {
                 game.actionChoiceResponses++;
 
-                p.setActionChoice(msg.action);
+                if (msg) {
+                    p.setActionChoice(msg.action);
+                }
 
                 if (game.actionChoiceResponses == game.players.length) {
                     game.continueNight();
                 }
             } else {
                 console.log("something went wrong");
+            }
+        });
+
+        socket.on('killVote', (msg) => {
+            let game = p.room.game;
+
+            game.setKillVote(msg.playerName);
+
+            if (game.killVoteCount == game.players.length) {
+                let playersToBeKilled = game.getPlayersToBeKilled();
+
+                if (playersToBeKilled) {
+                    let winner = game.determineWinner();
+
+                    p.room.players.forEach(p => {
+                        p.socket.emit('gameResults', { "playersToBeKilled": playersToBeKilled, "winner": winner });
+                    });
+                }
             }
         });
     }
