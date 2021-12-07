@@ -106,6 +106,7 @@ A class with a handful of properties and some setters for them. Properties inclu
 - `name`
 - `role`
 - `actionChoice`
+- `killVotes` (set in the `game.js` method `setKillVote(playerName)`)
 
 ### The room class
 
@@ -117,6 +118,8 @@ The room class has the following properties:
 - `completeFunctions` - An array of functions to be called at some later specified time.
   - When `engine.js` creates a new room, it calls `room.onComplete(cbFunc)`, where `cbFunc` indicates some callback function, and uses `engine.deleteRoom()` as the argument. Why do this? When a room is to be deleted, we want to remove the references to it in `engine.rooms` and `player.room`. The method responsible for shutting down the room really should be a method in `room.js`. Indeed, `room.shutdownRoom()` sets all players' room to null and then calls each function in the `completeFunctions` array (one of which splices out the room from the `engine.rooms` array).
 - `code` - The password players must submit to enter the room (rename to password?)
+
+There are, of course, methods accompanying many of these properties that add a player, remove a player, check if a player name is already in use, etc.
 
 ### Setting up and carrying out a game of werewolf
 

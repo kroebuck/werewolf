@@ -106,7 +106,12 @@ document.addEventListener('DOMContentLoaded', function () {
         let actionsContainerDiv = document.getElementById('actions_container');
         actionsContainerDiv.style.display = null;
 
-        // Display actions to player. Initial if statement checks if action is preprocess or not.
+        // if a message from 'roles.json' is attached, display it
+        if (msg.playerInfo.data.message) {
+            actionsContainerDiv.innerHTML += `<br>${msg.playerInfo.data.message}`;
+        }
+
+        // Display actions to player. Initial if statement checks if action is preprocess or not. If it is, it will have a 'data' key.
         if (Object.keys(msg.playerInfo.data).length === 0) {
             player.actions = msg.playerInfo.actions;
 

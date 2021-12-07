@@ -95,7 +95,7 @@ class Game {
 
     startNight() {
         this.queue.forEach(p => {
-            // Would make sense to do preprocessing AFTER emitting chooseActions event
+            // Would make sense to do preprocessing AFTER emitting chooseActions event so we make use of the time when player's are choosing what to do
             let playerInfo = this.preprocessActions(p, p.role.actions);
 
             p.socket.emit('chooseActions', { 'playerInfo': playerInfo });
@@ -199,6 +199,10 @@ class Game {
             if (eval(action.condition.test)) {
                 r = this.doAction(player, action.condition.outcome);
             }
+        }
+
+        if (action.message) {
+            r.message = action.message;
         }
 
         return r;

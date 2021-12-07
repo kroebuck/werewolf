@@ -125,7 +125,7 @@ class Game {
         }
         
         if (actionResult.middleRoles) {
-            actionsContainerDiv.innerHTML = "<b>View Middle Roles</b><br>";
+            actionsContainerDiv.innerHTML += '<br> <b>View Middle Roles</b><br>';
             actionResult.middleRoles.forEach(roleName => {
                 actionsContainerDiv.innerHTML += `${roleName}<br>`;
             })

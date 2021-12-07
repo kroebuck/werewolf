@@ -187,7 +187,7 @@ class Engine {
             game.setKillVote(msg.playerName);
 
             if (game.killVoteCount == game.players.length) {
-                let playersToBeKilled = game.getPlayersToBeKilled();
+                let playersToBeKilled = game.determinePlayersToBeKilled();
 
                 if (playersToBeKilled) {
                     let winner = game.determineWinner();
