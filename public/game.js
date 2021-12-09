@@ -7,12 +7,55 @@
 //     'actions':
 //          'action':
 //          'data':
+//              'message':
 // }
+
+// Get this info from game.js? Probably shouldn't be hard coded in multiple spots...S
+const MIDDLE_ROLE_COUNT = 3; // Vanilla game is 3
+const MIN_PLAYER_COUNT = 2;
 
 class Game {
     constructor(socket) {
         this.socket = socket;
+        this.playerNames = [];
+        this.chosenRoles = [];
+    }
 
+    setChosenRoles(roles) {
+        // get total amountForGame count
+        let totalAmountForGame = 0;
+        for (var key in roles) {
+            if (roles.hasOwnProperty(key)) {
+                for (let i = 0; i < roles[key].amountForGame; i++) {
+                    this.chosenRoles.push(roles[key].id);
+                }
+                totalAmountForGame += roles[key].amountForGame;
+            }
+        }
+
+        // check if game start conditions are met
+        if (totalAmountForGame == this.playerNames.length + MIDDLE_ROLE_COUNT) {
+            console.log("Chosen roles set: " + this.chosenRoles);
+        } else {
+            this.chosenRoles = [];
+            console.log(`Number of chosen roles (${totalAmountForGame}) must equal required amount (${this.playerNames.length + MIDDLE_ROLE_COUNT})`);
+        }
+    }
+
+    checkIsGameReady() {
+        let isGameReady = true;
+
+        if (this.chosenRoles.length == 0) {
+            isGameReady = false;
+            console.log("Roles not set.");
+        }
+
+        if (this.playerNames.length < MIN_PLAYER_COUNT) {
+            isGameReady = false;
+            console.log(`Not enough players in lobby. Minimum required is ${MIN_PLAYER_COUNT}.`);
+        }
+
+        return isGameReady;
     }
 
     revealAllOfRole() {
@@ -244,7 +287,7 @@ class Game {
         return nothingBtn;
     }
 
-    // input the string 'player.actions.action'
+    // input the string <player.actions.action>
     getActionObj(action) {
         if (player.role.actions) {
             for (let i = 0; i < player.role.actions.length; i++) {

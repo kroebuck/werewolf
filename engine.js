@@ -52,6 +52,10 @@ class Engine {
 
         console.log('user connected (' + this.players.length + ')');
 
+        // When role info is displayed, only the host should see the selection buttons,
+        // but this is sent before room creation. Currently creating the buttons upon
+        // roles event listen, but only setting display to visible on roomCreate (which
+        // only the host will get)
         socket.emit('roles', Game.getAllRoles());
 
         // TODO
@@ -83,6 +87,8 @@ class Engine {
                         host.socket.emit('gameStartStatus', { "isReady": room.checkIsGameReady() });
                     }
                 }
+
+                this.broadcastPlayersArray(room);
             }
 
             // remove user from players array?

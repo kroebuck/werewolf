@@ -6,6 +6,15 @@
 	float:  right;
 }
 
+.role-amount {
+	float:	right;
+	padding-right:  5px;
+}
+
+.role-selection {
+	float: 	right;
+}
+
 .clear {
 	clear: both;
 }
