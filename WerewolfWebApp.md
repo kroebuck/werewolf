@@ -39,7 +39,7 @@ server.listen(3000, () => {
 });
 ```
 
-What does this do? Express initializes `app` to be a function handler that can be supplied to an HTTP server (which we do on line 4). Then, define a route handler `/` that gets called when we hit the home website. Finally, we make the HTTP server listen on port 3000. If met with "Error: Cannot find module 'express', enter
+What does this do? Express initializes `app` to be a function handler that can be supplied to an HTTP server (which we do on line 4). Then, define a route handler `/` that gets called when we hit the home website. Finally, we make the HTTP server listen on port 3000. If met with "Error: Cannot find module 'express'", enter
 
 ```console
 npm install express
@@ -89,7 +89,7 @@ Next, we need to add
 </script>
 ```
 
-to `index.html` before the `<\body>` tag. As with Express earlier, if met with "Error: Cannot find module 'socket.io', enter
+to `index.html` before the `<\body>` tag. As with Express earlier, if met with "Error: Cannot find module 'socket.io'", enter
 
 ```console
 npm install socket.io
