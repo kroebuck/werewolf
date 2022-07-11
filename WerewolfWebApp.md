@@ -39,7 +39,13 @@ server.listen(3000, () => {
 });
 ```
 
-What does this do? Express initializes `app` to be a function handler that can be supplied to an HTTP server (which we do on line 4). Then, define a route handler `/` that gets called when we hit the home website. Finally, we make the HTTP server listen on port 3000.
+What does this do? Express initializes `app` to be a function handler that can be supplied to an HTTP server (which we do on line 4). Then, define a route handler `/` that gets called when we hit the home website. Finally, we make the HTTP server listen on port 3000. If met with "Error: Cannot find module 'express', enter
+
+```console
+npm install express
+```
+
+in the Terminal while in the project directory to install Express.
 
 Right now, all that the webpage will display is "Hello world." We'll want much more displayed, so we will create a `index.html` file and refactor the route handler to
 
@@ -83,7 +89,13 @@ Next, we need to add
 </script>
 ```
 
-to `index.html` before the `<\body>` tag.
+to `index.html` before the `<\body>` tag. As with Express earlier, if met with "Error: Cannot find module 'socket.io', enter
+
+```console
+npm install socket.io
+```
+
+in the Terminal while in the project directory to install Socket.io.
 
 ### Managing the players and rooms
 
