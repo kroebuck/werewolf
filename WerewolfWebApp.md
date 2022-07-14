@@ -221,5 +221,5 @@ The usual way to run a Node.js program is to run the `node` globally available c
 2) Change directory to folder containing index.js
 3) Type `node index.js` into Terminal
 4) Go to the designated web address
-   - If local, go to `127.0.0.1:3000`
+   - If local, go to `localhost:3000`
 5) To exit, press `ctrl+c` in Terminal
