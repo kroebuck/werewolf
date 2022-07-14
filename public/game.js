@@ -68,12 +68,12 @@ class Game {
         
         document.getElementById('actions_container').innerHTML = actionObj.actionName;
 
-        this.generateChooseOtherPlayersDiv();
+        var chooseDiv = this.generateChooseOtherPlayersDiv();
 
         let reqCount = 1;
 
-        if (action.count) {
-            reqCount = action.count;
+        if (actionObj.count) {
+            reqCount = actionObj.count;
         }
 
         let submitBtn = this.generateSubmitButton();
@@ -83,8 +83,9 @@ class Game {
 
             if (selections.length == reqCount) {
                 console.log("Player selection(s) made!");
+                this.disableChildren(chooseDiv);
                 submitBtn.disabled = true;
-                action.selection = selections;
+                actionObj.selection = selections;
                 this.socket.emit('actionChoice', { "action": actionObj });
             } else {
                 console.log(`You must select ${reqCount} player(s).`);
@@ -107,8 +108,7 @@ class Game {
 
         document.getElementById('actions_container').innerHTML = actionObj.actionName;
 
-        this.generateChooseOtherPlayersDiv();
-
+        let chooseDiv = this.generateChooseOtherPlayersDiv();
         let submitBtn = this.generateSubmitButton();
 
         // Swap roles
@@ -117,14 +117,15 @@ class Game {
 
             let reqCount = 2;
 
-            if (action.target == "self") {
+            if (actionObj.target == "self") {
                 reqCount = 1;
             }
 
             if (selections.length == reqCount) {
                 console.log("Player selection(s) made!");
+                this.disableChildren(chooseDiv);        
                 submitBtn.disabled = true;
-                action.selection = selections;
+                actionObj.selection = selections;
                 this.socket.emit('actionChoice', { "action": actionObj });
             } else {
                 console.log(`You must select ${reqCount} players to swap.`);
@@ -142,52 +143,61 @@ class Game {
     }
 
     displayActionResult(actionResult) {
-        let actionsContainerDiv = document.getElementById("actions_container");
+        var actionsDiv = document.getElementById("actions_container");
+        actionsDiv.disabled = true;
+        actionsDiv.style.display = 'none';
 
-        if (actionResult.members) {
-            if (actionResult.count < 2) { // currently unused, not sending client info saying we tried this
-                actionsContainerDiv.innerHTML += `<br>You are the only ${actionResult.role} awake.`;
+        let resultsDiv = document.getElementById("action_results");
+        resultsDiv.style.display = null;
+        resultsDiv.innerHTML = "Action: " + actionResult.action + "<br>Result:";
+
+        let result = actionResult.result;
+
+        if (result.members) {
+            if (result.count < 2) { // currently unused, not sending client info saying we tried this
+                resultsDiv.innerHTML += `<br>You are the only ${result.role} awake.`;
             } else {
-                actionsContainerDiv.innerHTML += `<br>Other players with role ${actionResult.role}:<br>`;
+                resultsDiv.innerHTML += `<br>Other players with role ${result.role}:<br>`;
 
-                actionResult.members.forEach(name => {
+                result.members.forEach(name => {
                     if (name != player.name) {
-                        actionsContainerDiv.innerHTML += `${name}<br>`;
+                        resultsDiv.innerHTML += `${name}<br>`;
                     }
                 });
             }
         }
 
-        if(actionResult.nameRolePairs) {
-            let map = actionResult.nameRolePairs;
+        if(result.nameRolePairs) {
+            let map = result.nameRolePairs;
             for (var key in map) {
                 if (map.hasOwnProperty(key)) {
-                    console.log(key + ": " + map[key]);
+                    resultsDiv.innerHTML += "<br>" + key + ": " + map[key];
                 }
             }
         }
         
-        if (actionResult.middleRoles) {
-            actionsContainerDiv.innerHTML += '<br> <b>View Middle Roles</b><br>';
-            actionResult.middleRoles.forEach(roleName => {
-                actionsContainerDiv.innerHTML += `${roleName}<br>`;
+        if (result.middleRoles) {
+            result.middleRoles.forEach(roleName => {
+                resultsDiv.innerHTML += `${roleName}<br>`;
             })
         }
     }
 
     displayPlayerToKillOptions() {
-        let actionsContainerDiv = document.getElementById("actions_container");
-        actionsContainerDiv.style.display = null;
-        actionsContainerDiv.innerHTML += "<br>";
+        let killDiv = document.getElementById("kill_container");
+        killDiv.style.display = null;
 
-        this.generateChooseOtherPlayersDiv();
-
+        var chooseDiv = this.generateChooseOtherPlayersDiv();
         let submitBtn = this.generateSubmitButton();
         submitBtn.innerText = "Vote to kill";
+
+        killDiv.append(chooseDiv);
+        killDiv.append(submitBtn);
 
         submitBtn.onclick = () => {
             let selection = this.getPlayerSelections();
             if (selection.length == 1) {
+                this.disableChildren(chooseDiv);
                 submitBtn.disabled = true;
                 console.log(`${selection[0]} chosen to kill.`);
                 this.socket.emit('killVote', { "playerName": selection[0] });
@@ -248,6 +258,8 @@ class Game {
         });
 
         document.getElementById("actions_container").appendChild(playerChooseContainer);
+
+        return playerChooseContainer;
     }
 
     getPlayerSelections() {
@@ -298,5 +310,12 @@ class Game {
         }
 
         return null;
+    }
+
+    disableChildren(container) {
+        var childNodes = container.getElementsByTagName('*');
+        for (var node of childNodes) {
+            node.disabled = true;
+        }
     }
 }

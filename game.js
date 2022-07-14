@@ -133,13 +133,14 @@ class Game {
                 let result = this.doAction(p, p.actionChoice);
 
                 if (result != null) {
-                    p.socket.emit('actionResult', result);
+                    console.log(p.actionChoice);
+                    p.socket.emit('actionResult', { 'action': p.actionChoice.actionName, 'result': result });
                 }
             }
         });
 
         this.queue.forEach(p => {
-            console.log(p.name + ": " + p.role.name);
+            // console.log(p.name + ": " + p.role.name);
             p.socket.emit('nightEnded');
         });
     }

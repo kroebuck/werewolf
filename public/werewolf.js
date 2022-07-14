@@ -157,12 +157,11 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     socket.on('actionResult', (res) => {
-        console.log(res);
         game.displayActionResult(res);
     });
 
     socket.on('nightEnded', () => {
-        console.log("Night has ended. Choose who to kill, if anyone.");
+        document.getElementById("kill_container").innerHTML = "Night has ended. Choose who to kill, if anyone:";
         game.displayPlayerToKillOptions();
     });
 
@@ -201,7 +200,7 @@ document.addEventListener('DOMContentLoaded', function () {
     };
 
     document.getElementById('start_game_button').onclick = () => {
-        game.setChosenRoles(roles);
+        //game.setChosenRoles(roles);
 
         if (game.checkIsGameReady()) {
             document.getElementById("game_start_div").style.display = "none";
@@ -214,15 +213,15 @@ document.addEventListener('DOMContentLoaded', function () {
             console.log("Start conditions not met.");
         }
 
-        // let chosenRoles = ["robber", "robber", "robber", "robber", "robber"];
+        // let chosenRoles = ["robber", "werewolf", "robber", "robber", "werewolf"];
         // let chosenRoles = ["seer", "seer", "seer", "seer", "seer"];
-        // let chosenRoles = ["werewolf", "werewolf", "villager", "villager", "villager"];
+        let chosenRoles = ["werewolf", "werewolf", "villager", "villager", "villager"];
         // let chosenRoles = ["werewolf", "werewolf", "werewolf", "werewolf", "werewolf"];
 
-        // document.getElementById("game_start_div").style.display = "none";
-        // document.getElementById('start_game_button').disabled = true;
+        document.getElementById("game_start_div").style.display = "none";
+        document.getElementById('start_game_button').disabled = true;
         
-        // socket.emit('gameStart', { 'roles': chosenRoles});
+        socket.emit('gameStart', { 'roles': chosenRoles});
     }
 
     function displayWaitingRoom() {
