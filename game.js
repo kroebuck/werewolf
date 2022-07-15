@@ -6,6 +6,7 @@ const MIDDLE_ROLE_COUNT = 3; // Vanilla game is 3
 
 class Game {
     constructor() {
+        this.rolesInGame = [];
         this.availRoles = [];
     }
 
@@ -17,6 +18,7 @@ class Game {
         roleChoices.forEach(rc => {
             this.availRoles.push(roles[rc]);
         });
+        this.rolesInGame = this.availRoles;
     }
 
     setPlayers(players) {
@@ -77,7 +79,7 @@ class Game {
                 p.setRole(role);
                 // Send the player role info and who else is in the game
                 let playerNames = this.players[0].room.getPlayerNamesArray();
-                p.socket.emit('gameUpdate', { 'role': role, 'playerNames': playerNames}); // could emit player names to all after the forEach function finishes
+                p.socket.emit('gameUpdate', { 'role': role, 'playerNames': playerNames, 'rolesInGame': this.rolesInGame }); // could emit player names to all after the forEach function finishes
                 // Remove assigned role from available roles
                 this.availRoles.splice(roleIndex, 1);
             });
@@ -114,10 +116,9 @@ class Game {
                 playerInfo.actions.push(acts.actions);
                 playerInfo.data = { ...playerInfo.data, ...acts.data };
             } else {
+                playerInfo.actions.push(a);
                 if (preprocess.includes(p.role.id)) {
                     playerInfo.data = this.doAction(p, a);
-                } else {
-                    playerInfo.actions.push(a);
                 }
             }
         });
@@ -133,14 +134,12 @@ class Game {
                 let result = this.doAction(p, p.actionChoice);
 
                 if (result != null) {
-                    console.log(p.actionChoice);
                     p.socket.emit('actionResult', { 'action': p.actionChoice.actionName, 'result': result });
                 }
             }
         });
 
         this.queue.forEach(p => {
-            // console.log(p.name + ": " + p.role.name);
             p.socket.emit('nightEnded');
         });
     }
@@ -199,6 +198,7 @@ class Game {
         if (action.condition) {
             if (eval(action.condition.test)) {
                 r = this.doAction(player, action.condition.outcome);
+                r.action = action.condition.outcome.actionName;
             }
         }
 

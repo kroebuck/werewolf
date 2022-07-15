@@ -14,6 +14,7 @@ var game;
 var roles;
 
 document.addEventListener('DOMContentLoaded', function () {
+    
     //
     // Socket
     //
@@ -29,23 +30,23 @@ document.addEventListener('DOMContentLoaded', function () {
         
         for (var key in roles) {
             if (roles.hasOwnProperty(key)) {
+                console.log(key);
+
                 let roleDiv = document.getElementById('role_template').cloneNode(true);
                 roleDiv.id = "role_" + key;
                 roleDiv.getElementsByClassName('role-name')[0].innerHTML = '<b>' + roles[key].name +'<b>';
-                //roleDiv.getElementsByClassName('role-info')[0].innerHTML = 'Count+Actions';
                 roles[key].amountForGame = 0;
                 roleDiv.getElementsByClassName('role-amount')[0].innerHTML = `${roles[key].amountForGame}`;
+                roleDiv.getElementsByClassName('role-desc')[0].innerHTML = roles[key].description;
+                roleDiv.style.display = null;
+                rolesDiv.appendChild(roleDiv);
 
-                // only host should see these buttons
+                // Display role selection buttons to host:
                 let roleSelectionButtons = generateRoleSelectionButtons(key);
                 let roleSelectionDiv = roleDiv.getElementsByClassName('role-selection')[0];
                 roleSelectionButtons.forEach(btn => {
                     roleSelectionDiv.appendChild(btn);
                 });
-
-                roleDiv.getElementsByClassName('role-desc')[0].innerHTML = roles[key].description;
-                roleDiv.style.display = null;
-                rolesDiv.appendChild(roleDiv);
             }
         }
     });
@@ -101,6 +102,8 @@ document.addEventListener('DOMContentLoaded', function () {
         playerNamesInRoom = msg.playerNames;
         displayPlayers(msg.playerNames);
 
+        displayRolesInGame(msg.rolesInGame);
+
         player.role = msg.role;
         console.log('Role acquired: ' + msg.role.name);
 
@@ -108,7 +111,7 @@ document.addEventListener('DOMContentLoaded', function () {
         playerRoleDiv.style.display = null;
         playerRoleDiv.innerHTML = "Role: " + msg.role.name;
 
-        document.getElementById('roles_div').style.display = "none";
+        document.getElementById('role_amount_div').style.display = "none";
 
         let actionsContainerDiv = document.getElementById('actions_container');
         actionsContainerDiv.style.display = null;
@@ -122,7 +125,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         // if a message from 'roles.json' is attached, display it
         if (msg.playerInfo.data.message) {
-            actionsContainerDiv.innerHTML += `<br>${msg.playerInfo.data.message}`;
+            actionsContainerDiv.innerHTML += `<br>${msg.playerInfo.data.message}<br>`;
         }
 
         // Display actions to player. Initial if statement checks if action is preprocess or not. If it is, it will have a 'data' key.
@@ -145,12 +148,15 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         } else {
             // data from pre-processed actions
-            game.displayActionResult(msg.playerInfo.data);
+            // game.displayActionResult(msg.playerInfo.data);
 
             let nothingBtn = game.generateDoNothingButton();
+            nothingBtn.innerHTML = msg.playerInfo.actions[0].actionName;
             nothingBtn.onclick = () => {
                 nothingBtn.disabled = true;
                 nothingBtn.style.display = "none";
+                let result = msg.playerInfo.data;
+                game.displayActionResult({ 'action': result.action, 'result': result });
                 socket.emit('actionChoice');
             };
         }
@@ -200,28 +206,27 @@ document.addEventListener('DOMContentLoaded', function () {
     };
 
     document.getElementById('start_game_button').onclick = () => {
-        //game.setChosenRoles(roles);
+        game.setChosenRoles(roles);
 
         if (game.checkIsGameReady()) {
             document.getElementById("game_start_div").style.display = "none";
             document.getElementById('start_game_button').disabled = true;
-
-            console.log(game.chosenRoles);
             
             socket.emit('gameStart', { 'roles': game.chosenRoles});
         } else {
             console.log("Start conditions not met.");
         }
 
+        // Preset role choices
         // let chosenRoles = ["robber", "werewolf", "robber", "robber", "werewolf"];
         // let chosenRoles = ["seer", "seer", "seer", "seer", "seer"];
-        let chosenRoles = ["werewolf", "werewolf", "villager", "villager", "villager"];
+        // let chosenRoles = ["werewolf", "werewolf", "villager", "villager", "villager"];
         // let chosenRoles = ["werewolf", "werewolf", "werewolf", "werewolf", "werewolf"];
 
-        document.getElementById("game_start_div").style.display = "none";
-        document.getElementById('start_game_button').disabled = true;
+        // document.getElementById("game_start_div").style.display = "none";
+        // document.getElementById('start_game_button').disabled = true;
         
-        socket.emit('gameStart', { 'roles': chosenRoles});
+        // socket.emit('gameStart', { 'roles': chosenRoles});
     }
 
     function displayWaitingRoom() {
@@ -229,6 +234,7 @@ document.addEventListener('DOMContentLoaded', function () {
         document.getElementById('player_name_div').innerHTML = "Name: " + player.name;
         document.getElementById('user_create_div').style.display = 'none';
         document.getElementById('room_wait_div').style.display = null;
+        document.getElementById('role_amount_div').style.display = null;
         document.getElementById('roles_div').style.display = null;
     }
 
@@ -237,6 +243,28 @@ document.addEventListener('DOMContentLoaded', function () {
         let roomPlayersDiv = document.getElementById('room_players_list');
         roomPlayersDiv.innerHTML = "";
         roomPlayersDiv.innerHTML = playerNames.join("<br>");
+    }
+
+    function displayRolesInGame(rolesInGame) {
+        var rolesDiv = document.getElementById('roles_div');
+        rolesDiv.innerHTML = "<b>Roles in game:</b>";
+
+        // Get counts of roles
+        var map = {}
+        rolesInGame.forEach(role => {
+            let key = role.name;
+            if (map.hasOwnProperty(key)) {
+                map[key] += 1;
+            } else {
+                map[key] = 1;
+            }
+        });
+
+        // Display role counts
+        Object.keys(map).forEach(key => { 
+            var count = map[key];
+            rolesDiv.innerHTML += "<br>" + count + " " + key;
+        })
     }
 
     // The input parameter 'role' is the 'outermost' key for the role in 'roles.json'. To avoid confusion, the value for this key is:
@@ -248,11 +276,15 @@ document.addEventListener('DOMContentLoaded', function () {
         addBtn.id = `${role}_add_button`;
         addBtn.innerText = "+";
 
+        let roleAmountDiv = document.getElementById('role_amount_div');
+        roleAmountDiv.innerHTML = `Roles selected: 0 / ${game.getRequiredRoleAmount()}`;
+
         // Increase role count by 1
         addBtn.onclick = () => {
             roles[role].amountForGame++;
             let roleDiv = document.getElementById(`role_${role}`);
             roleDiv.getElementsByClassName("role-amount")[0].innerHTML = roles[role].amountForGame;
+            roleAmountDiv.innerHTML = `Roles selected: ${getRoleSelectionCount()} / ${game.getRequiredRoleAmount()}`;
         }
 
         let rmvBtn = document.createElement("button");
@@ -265,12 +297,23 @@ document.addEventListener('DOMContentLoaded', function () {
                 roles[role].amountForGame--;
                 let roleDiv = document.getElementById(`role_${role}`);
                 roleDiv.getElementsByClassName("role-amount")[0].innerHTML = roles[role].amountForGame;
+                roleAmountDiv.innerHTML = `Roles selected: ${getRoleSelectionCount()} / ${game.getRequiredRoleAmount()}`;
             } else {
                 console.log("There are already 0 of that role");
             }
         }
 
         return [addBtn, rmvBtn];
+    }
+
+    function getRoleSelectionCount() {
+        var count = 0;
+        for (var key in roles) {
+            if (roles.hasOwnProperty(key)) {
+                count += roles[key].amountForGame;
+            }
+        }
+        return count;
     }
 
     function displayRoleSelectionOptions() {

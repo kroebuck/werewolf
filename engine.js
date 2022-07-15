@@ -120,9 +120,9 @@ class Engine {
                     this.broadcastPlayersArray(room);
 
                     if (room.checkIsGameReady()) {
-                        room.players.forEach(us => {
-                            if (us.host) {
-                                us.socket.emit('gameStartStatus', { 'isReady': true });
+                        room.players.forEach(u => {
+                            if (u.host) {
+                                u.socket.emit('gameStartStatus', { 'isReady': true });
                             }
                         });
                     }

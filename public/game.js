@@ -21,6 +21,10 @@ class Game {
         this.chosenRoles = [];
     }
 
+    //
+    // Game Setup
+    //
+    
     setChosenRoles(roles) {
         // get total amountForGame count
         let totalAmountForGame = 0;
@@ -36,6 +40,7 @@ class Game {
         // check if game start conditions are met
         if (totalAmountForGame == this.playerNames.length + MIDDLE_ROLE_COUNT) {
             console.log("Chosen roles set: " + this.chosenRoles);
+            document.getElementById('start_game_button').disabled = false;
         } else {
             this.chosenRoles = [];
             console.log(`Number of chosen roles (${totalAmountForGame}) must equal required amount (${this.playerNames.length + MIDDLE_ROLE_COUNT})`);
@@ -47,7 +52,7 @@ class Game {
 
         if (this.chosenRoles.length == 0) {
             isGameReady = false;
-            console.log("Roles not set.");
+            ("Roles not set.");
         }
 
         if (this.playerNames.length < MIN_PLAYER_COUNT) {
@@ -58,6 +63,15 @@ class Game {
         return isGameReady;
     }
 
+    getRequiredRoleAmount() {
+        return Math.max(MIN_PLAYER_COUNT, this.playerNames.length) + MIDDLE_ROLE_COUNT;
+    }
+
+    //
+    // Actions
+    //
+
+    // werewolf
     revealAllOfRole() {
         document.getElementById('actions_container').innerHTML = player.actions.actionName;
     }
@@ -93,7 +107,7 @@ class Game {
         }
     }
 
-    // seer
+    // seer, werewolf
     getRandomMiddleRoles() {
         let actionObj = this.getActionObj("getRandomMiddleRoles");
 
@@ -133,6 +147,7 @@ class Game {
         }
     }
 
+    // villager, robber, troublemaker
     doNothing() {
         let actionObj = this.getActionObj("doNothing");
 
@@ -142,6 +157,10 @@ class Game {
         this.socket.emit('actionChoice', { "action": actionObj });
     }
 
+    //
+    // Helper Functions
+    //
+
     displayActionResult(actionResult) {
         var actionsDiv = document.getElementById("actions_container");
         actionsDiv.disabled = true;
@@ -149,7 +168,7 @@ class Game {
 
         let resultsDiv = document.getElementById("action_results");
         resultsDiv.style.display = null;
-        resultsDiv.innerHTML = "Action: " + actionResult.action + "<br>Result:";
+        resultsDiv.innerHTML = "Action: " + actionResult.action + "<br>Result: ";
 
         let result = actionResult.result;
 

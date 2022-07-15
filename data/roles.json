@@ -13,7 +13,8 @@
 				{ 
 					"test": "r.count < 2",
 					"outcome": {
-						"action": "getRandomMiddleRoles", 
+						"action": "getRandomMiddleRoles",
+						"actionName": "View Random Middle Role",
 						"count": 1,
 						"message": "There are no other werewolves. View a middle role instead:"
 					}
