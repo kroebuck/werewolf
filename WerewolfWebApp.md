@@ -165,15 +165,12 @@ Currently, any preprocessable actions are processed during `game.startNight()` a
 
 ## Ideas for the webapp
 
-### Displaying of preprocessed actions on client-side
-
-Even if there is only one action option, and if it is preprocessed already, still let player click on a button labeled as that action.
-
-This way, there is consistency across all roles.
-
 ### Host options before game start
 
-- Choose which roles to include in the game
+> [!DONE]
+> - Choose which roles to include in the game
+
+- Send role selection info to other in room as host is selecting them
 
 ### Timer for voting
 
@@ -208,18 +205,10 @@ PixiJS?
 
 The usual way to run a Node.js program is to run the `node` globally available command (once you install Node.js) and pass the name of the file you want to execute. More explicitly, for us this will look like:
 
-### Windows
-1) Open PowerShell
-2) Change directory to folder containing index.js
-3) Type `node index.js` into PowerShell
-4) Go to the designated web address
-   - If local, go to `localhost:3000`
-5) To exit, press `ctrl+c` in PowerShell
-
-### Mac
 1) Open Terminal
 2) Change directory to folder containing index.js
-3) Type `node index.js` into Terminal
+3) Enter  `npm start`
+	- This is a script that runs `node index.js` ``
 4) Go to the designated web address
    - If local, go to `localhost:3000`
 5) To exit, press `ctrl+c` in Terminal
