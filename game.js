@@ -7,7 +7,7 @@ const MIDDLE_ROLE_COUNT = 3; // Vanilla game is 3
 class Game {
     constructor() {
         this.rolesInGame = [];
-        this.availRoles = [];
+        this.rolesAvailable = [];
     }
 
     static getAllRoles() {
@@ -16,9 +16,9 @@ class Game {
 
     setRoles(roleChoices) {
         roleChoices.forEach(rc => {
-            this.availRoles.push(roles[rc]);
+            this.rolesAvailable.push(roles[rc]);
+            this.rolesInGame .push(roles[rc]);
         });
-        this.rolesInGame = this.availRoles;
     }
 
     setPlayers(players) {
@@ -71,17 +71,17 @@ class Game {
     startGame() {
         // Ensure we have enough players to have all roles filled plus the designated amount MIDDLE_ROLE_COUNT remaining
         // Then assign roles randomly
-        if(this.players && this.players.length == this.availRoles.length - MIDDLE_ROLE_COUNT) {
+        if(this.players && this.players.length == this.rolesAvailable.length - MIDDLE_ROLE_COUNT) {
             this.players.forEach(p => {
                 // Select random role from available roles
-                let roleIndex = Math.floor(Math.random() * this.availRoles.length);
-                let role = this.availRoles[roleIndex];
+                let roleIndex = Math.floor(Math.random() * this.rolesAvailable.length);
+                let role = this.rolesAvailable[roleIndex];
                 p.setRole(role);
                 // Send the player role info and who else is in the game
                 let playerNames = this.players[0].room.getPlayerNamesArray();
                 p.socket.emit('gameUpdate', { 'role': role, 'playerNames': playerNames, 'rolesInGame': this.rolesInGame }); // could emit player names to all after the forEach function finishes
                 // Remove assigned role from available roles
-                this.availRoles.splice(roleIndex, 1);
+                this.rolesAvailable.splice(roleIndex, 1);
             });
         }
 
@@ -249,7 +249,7 @@ class Game {
         let middleRoles = [];
 
         // create deep copy
-        let availRolesCopy = JSON.parse(JSON.stringify(this.availRoles));
+        let availRolesCopy = JSON.parse(JSON.stringify(this.rolesAvailable));
 
         // choose roles at random
         for (let i = 0; i < action.count; i++) {

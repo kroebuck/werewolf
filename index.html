@@ -13,9 +13,9 @@
     <body>
         <div id="user_create_div">
             <label for="char_name">Name</label><br>
-            <input type="text" placeholder="Name" id="char_name" /><br>
+            <input type="text" placeholder="Name" id="char_name" autocomplete=off/><br>
             <label for="room_code">Room Code</label><br>
-            <input type="text" placeholder="Room code" id="room_code">
+            <input type="text" placeholder="Room code" id="room_code" autocomplete=off>
             <input type="button" id="join_room" value="Join room"/><br>
             <input type="button" id="create_room" value="Create new room">
         </div>
@@ -30,6 +30,8 @@
             <input type="button" id="start_game_button" value="Start the game" disabled/>
         </div>
 
+        <br>
+
         <div id="role_amount_div" style="display: none;"></div>
         <div id="roles_div" style="display: none;"></div>
 
@@ -43,17 +45,26 @@
             <div class="clear"></div>
             <div class="role-desc"></div>
         </div>
+
         <br>
+
         <div id="room_players_container" style="display: none">
             <div><b>Players</b></div>
             <div id="room_players_list"></div>
         </div>
+
         <br>
+
         <div id="actions_container" style="display: none"></div>
         <div id="action_results" style="display: none"></div>
+
         <br>
+
+        <div id="role_order" style="display: none">Order of roles during night:</div>
         <div id="kill_container" style="display: none"></div>
+        
         <br>
+        
         <div id="game_results_container" style="display: none"></div>
     </body>
 </html>

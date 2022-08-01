@@ -30,8 +30,6 @@ document.addEventListener('DOMContentLoaded', function () {
         
         for (var key in roles) {
             if (roles.hasOwnProperty(key)) {
-                console.log(key);
-
                 let roleDiv = document.getElementById('role_template').cloneNode(true);
                 roleDiv.id = "role_" + key;
                 roleDiv.getElementsByClassName('role-name')[0].innerHTML = '<b>' + roles[key].name +'<b>';
@@ -109,7 +107,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         let playerRoleDiv = document.getElementById("player_role_div");
         playerRoleDiv.style.display = null;
-        playerRoleDiv.innerHTML = "Role: " + msg.role.name;
+        playerRoleDiv.innerHTML = "Starting Role: " + msg.role.name;
 
         document.getElementById('role_amount_div').style.display = "none";
 
@@ -168,6 +166,18 @@ document.addEventListener('DOMContentLoaded', function () {
 
     socket.on('nightEnded', () => {
         document.getElementById("kill_container").innerHTML = "Night has ended. Choose who to kill, if anyone:";
+
+        // display role order
+        var roleOrderDiv = document.getElementById("role_order");
+        roleOrderDiv.style.display = null;
+        for (var key in roles) {
+            if (roles.hasOwnProperty(key)) {
+                console.log(key);
+                roleOrderDiv.innerHTML += "<br>" + key;
+            }
+        }
+        roleOrderDiv.innerHTML += "<br>";
+
         game.displayPlayerToKillOptions();
     });
 

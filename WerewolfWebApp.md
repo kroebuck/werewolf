@@ -198,6 +198,9 @@ Use a canvas?
 PixiJS?
 
 
+### ISSUES
+- Number of roles present on game start is wrong for non-hosts
+	- Missing the role the host gets
 
 
 
