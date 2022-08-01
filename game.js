@@ -6,8 +6,8 @@ const MIDDLE_ROLE_COUNT = 3; // Vanilla game is 3
 
 class Game {
     constructor() {
-        this.rolesInGame = [];
-        this.rolesAvailable = [];
+        this.rolesInGame = [];      // All of the roles selected to be a part of the game
+        this.rolesAvailable = [];   // Roles in the game that have yet to be assigned to a player
     }
 
     static getAllRoles() {
@@ -53,17 +53,21 @@ class Game {
         this.players.forEach(p => {
             if (p.killVotes > currentMaxVotes) {
                 currentMaxVotes = p.killVotes;
-                playersToBeKilled = [];
-                playersToBeKilled.push(p);
+                playersToBeKilled = [p];
             } else if (p.killVotes == currentMaxVotes) {
                 playersToBeKilled.push(p);
             }
+        });
+
+        this.players.forEach(p => {
+            console.log(p.name + ": " + p.killVotes);
         });
 
         // if everyone has 1 vote, no one gets killed
         if (currentMaxVotes == 1) {
             return [];
         } else {
+            console.log(playersToBeKilled);
             return playersToBeKilled;
         }        
     }
@@ -144,10 +148,13 @@ class Game {
         });
     }
 
-    determineWinner() {
+    // could also store playersToBeKilled as class property in determinePlayersToBeKilled() method
+    // instead of sending to engine.js and then sending back here
+    determineWinner(playersToBeKilled) {
+        console.log('winner being determined...');
         var winner = '';
 
-        let playersToBeKilled = this.determinePlayersToBeKilled();
+        //let playersToBeKilled = this.determinePlayersToBeKilled();
 
         let werewolfIsPresent = false;
 
@@ -158,6 +165,8 @@ class Game {
                 break;
             }
         }
+
+        console.log('werewolf present? ' + werewolfIsPresent);
 
         // villager win
             // no werewolves & no one killed
@@ -172,11 +181,13 @@ class Game {
 
             // Check if a werewolf died
             for (let i = 0; i < playersToBeKilled.length; i++) {
-                if (this.players[i].role.id == "werewolf") {
+                if (playersToBeKilled[i].role.id == "werewolf") {
                     werewolfWasKilled = true;
                     break;
                 }
             }
+
+            console.log('werewolf killed? ' + werewolfWasKilled);
 
             if (werewolfWasKilled) {
                 winner = 'village';
@@ -190,7 +201,7 @@ class Game {
 
     // The parameter "action" should be one of the elements of the array associated with the "actions" attribute. Explicitly:
     // "role": {
-    //      actions": [{ 'action 1' }, { 'action 2' }, ...]
+    //      "actions": [{ 'action 1' }, { 'action 2' }, ...]
     // }
     doAction(player, action) {
         let r = eval('this.' + action.action + '(player, action)');

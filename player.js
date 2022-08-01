@@ -5,6 +5,7 @@ class Player {
         this.socket = socket;
         this.host = false;
         this.room = null;
+        this.killVotes = 0;
     }
 
     setName(name) {

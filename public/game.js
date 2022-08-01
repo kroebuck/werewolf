@@ -237,14 +237,15 @@ class Game {
             if (gameResults.playersToBeKilled.length == 0) {
                 gameResultsDiv.innerHTML += "<br>";
                 gameResultsDiv.innerText += "None"
+            } else {
+                gameResults.playersToBeKilled.forEach(p => {
+                    gameResultsDiv.innerText += `<br>${p.name}: ${p.role.name}`;
+                });
             }
-            gameResults.playersToBeKilled.forEach(p => {
-                gameResultsDiv.innerText += `<br>${p.name}: ${p.role.name}`;
-            })
         }
 
         if (gameResults.winner) {
-            gameResultsDiv.innerHTML += "<br/>";
+            gameResultsDiv.innerHTML += "<br>";
             gameResultsDiv.innerHTML += `<b>Winning team:</b> ${gameResults.winner}`;
         }
     }

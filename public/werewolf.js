@@ -184,8 +184,12 @@ document.addEventListener('DOMContentLoaded', function () {
     socket.on('gameResults', (msg) => {
         // 'gameResults', { "playersToBeKilled": playersToBeKilled, "winner": winner }
         console.log(msg.winner + " wins");
-        game.displayGameResults(msg);
+        //game.displayGameResults(msg);
     });
+
+    socket.on('testEvent', (msg) => {
+        console.log(msg);
+    })
 
     //
     // Bindings

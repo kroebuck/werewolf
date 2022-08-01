@@ -199,8 +199,14 @@ PixiJS?
 
 
 ### ISSUES
-- Number of roles present on game start is wrong for non-hosts
-	- Missing the role the host gets
+- Choose players Selection tickboxes for swap should be vertical, not horizontal
+- Result for kill vote is being taken from prior choose player selection(s)
+- Action for Troublemaker
+	- Remove tickbox when action done
+		- Interferes with choose to kill
+			- See how robber's action has done this
+- Order of roles during night needs a `<br>` at end
+- When multiple werewolves are present, the action displayed on the HTML after selecting 'reveal' is 'undefined'
 
 
 

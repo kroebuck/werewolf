@@ -196,11 +196,22 @@ class Engine {
                 let playersToBeKilled = game.determinePlayersToBeKilled();
 
                 if (playersToBeKilled) {
-                    let winner = game.determineWinner();
+                    let winner = game.determineWinner(playersToBeKilled);
 
-                    p.room.players.forEach(p => {
-                        p.socket.emit('gameResults', { "playersToBeKilled": playersToBeKilled, "winner": winner });
-                    });
+                    var playerNamesToBeKilled = [];
+                    for (let i = 0; i < playersToBeKilled.length; i++) {
+                        playerNamesToBeKilled.push("name");
+                    }
+            
+
+                    p.socket.emit('testEvent', playerNamesToBeKilled);
+
+                    // p.room.players.forEach(user => {
+                    //     console.log(user.name);
+                    //     user.socket.emit('gameResults', { "playersToBeKilled": playersToBeKilled, "winner": winner });
+                    // });
+                } else {
+                    // emit error
                 }
             }
         });
