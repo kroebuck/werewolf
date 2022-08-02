@@ -45,6 +45,37 @@ class Engine {
         this.rooms.splice(index, 1);
     }
 
+    // Call when all kill votes are cast
+    // Determines players to be killed and sends game results to users in room
+    finishGame(room) {
+        let game = room.game;
+
+        let playersToBeKilled = game.determinePlayersToBeKilled();
+        let finalRoles = game.getRoles();
+
+        if (playersToBeKilled) {
+            let winner = game.determineWinner(playersToBeKilled);
+
+            // Construct array of player names from array of player objects
+            var playerNamesToBeKilled = [];
+            for (let i = 0; i < playersToBeKilled.length; i++) {
+                let name = playersToBeKilled[i].name;
+                let role = playersToBeKilled[i].role.name;
+                playerNamesToBeKilled.push({ "name": name, "role": role });
+            }
+
+            room.players.forEach(p => {
+                p.socket.emit('gameResults', { 
+                    "playersToBeKilled": playerNamesToBeKilled,
+                    "winner": winner,
+                    "playerFinalRoles": finalRoles }
+                    );
+            });
+        } else {
+            // emit error
+        }
+    }
+
     newSocket(socket) {
         var p = new Player(socket);
 
@@ -59,7 +90,7 @@ class Engine {
         socket.emit('roles', Game.getAllRoles());
 
         // TODO
-        // move this to players.js?
+        // move this to player.js?
         // sessions? remove player from room/server arrays after some period of time?
         socket.on('disconnect', () => {
             // remove user from players array
@@ -193,26 +224,7 @@ class Engine {
             game.setKillVote(msg.playerName);
 
             if (game.killVoteCount == game.players.length) {
-                let playersToBeKilled = game.determinePlayersToBeKilled();
-
-                if (playersToBeKilled) {
-                    let winner = game.determineWinner(playersToBeKilled);
-
-                    var playerNamesToBeKilled = [];
-                    for (let i = 0; i < playersToBeKilled.length; i++) {
-                        playerNamesToBeKilled.push("name");
-                    }
-            
-
-                    p.socket.emit('testEvent', playerNamesToBeKilled);
-
-                    // p.room.players.forEach(user => {
-                    //     console.log(user.name);
-                    //     user.socket.emit('gameResults', { "playersToBeKilled": playersToBeKilled, "winner": winner });
-                    // });
-                } else {
-                    // emit error
-                }
+                this.finishGame(p.room);
             }
         });
     }

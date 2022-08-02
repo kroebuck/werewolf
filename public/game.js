@@ -200,6 +200,21 @@ class Game {
                 resultsDiv.innerHTML += `${roleName}<br>`;
             })
         }
+
+        // TODO: Improve implementation so indices are not hardcoded
+        if (result.swaps) {
+            if (result.swaps.length == 1) {
+                // swapped with self
+                resultsDiv.innerHTML += `Swapped roles with ${result.swaps[0]}<br>`;
+            } else {
+                // swapped others
+                resultsDiv.innerHTML += `Swapped roles of ${result.swaps[0]} and ${result.swaps[1]}<br>`;
+            }
+        }
+
+        if (result.newRole) {
+            resultsDiv.innerHTML += `Role acquired: ${result.newRole.name}<br>`;
+        }
     }
 
     displayPlayerToKillOptions() {
@@ -231,21 +246,22 @@ class Game {
     displayGameResults(gameResults) {
         let gameResultsDiv = document.getElementById("game_results_container");
         gameResultsDiv.style.display = null;
-        gameResultsDiv.innerHTML += "<b>Players Killed:</b>";
+        gameResultsDiv.innerHTML = "Players Killed:";
 
         if (gameResults.playersToBeKilled) {
             if (gameResults.playersToBeKilled.length == 0) {
                 gameResultsDiv.innerHTML += "<br>";
-                gameResultsDiv.innerText += "None"
+                gameResultsDiv.innerHTML += "None"
             } else {
                 gameResults.playersToBeKilled.forEach(p => {
-                    gameResultsDiv.innerText += `<br>${p.name}: ${p.role.name}`;
+                    gameResultsDiv.innerHTML += "<br>";
+                    gameResultsDiv.innerHTML += `${p.name} (${p.role})`;
                 });
             }
         }
 
         if (gameResults.winner) {
-            gameResultsDiv.innerHTML += "<br>";
+            gameResultsDiv.innerHTML += "<br><br>";
             gameResultsDiv.innerHTML += `<b>Winning team:</b> ${gameResults.winner}`;
         }
     }
@@ -262,7 +278,7 @@ class Game {
 
         playerNamesInRoom.forEach(name => {
             if (name != player.name) {
-                var label= document.createElement("label");
+                var label = document.createElement("label");
                 var description = document.createTextNode(name);
                 var checkbox = document.createElement("input");
 
@@ -274,6 +290,7 @@ class Game {
                 label.appendChild(description);
 
                 playerChooseContainer.appendChild(label);
+                playerChooseContainer.innerHTML += "<br>";
             }
         });
 
@@ -335,6 +352,7 @@ class Game {
     disableChildren(container) {
         var childNodes = container.getElementsByTagName('*');
         for (var node of childNodes) {
+            node.removeAttribute('id');
             node.disabled = true;
         }
     }

@@ -166,10 +166,6 @@ Currently, any preprocessable actions are processed during `game.startNight()` a
 ## Ideas for the webapp
 
 ### Host options before game start
-
-> [!DONE]
-> - Choose which roles to include in the game
-
 - Send role selection info to other in room as host is selecting them
 
 ### Timer for voting
@@ -199,14 +195,10 @@ PixiJS?
 
 
 ### ISSUES
-- Choose players Selection tickboxes for swap should be vertical, not horizontal
-- Result for kill vote is being taken from prior choose player selection(s)
-- Action for Troublemaker
-	- Remove tickbox when action done
-		- Interferes with choose to kill
-			- See how robber's action has done this
-- Order of roles during night needs a `<br>` at end
-- When multiple werewolves are present, the action displayed on the HTML after selecting 'reveal' is 'undefined'
+- Update required role amount when player joins/leaves room
+- VALIDATE USER CHOICES ON BACKEND!
+	- Possible for a player to tell server to do an action from another class!
+	- or, for example, tell seer action to view EVERYONE's roles
 
 
 

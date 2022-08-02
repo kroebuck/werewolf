@@ -14,6 +14,15 @@ class Game {
         return roles;
     }
 
+    getRoles() {
+        var roles = [];
+        this.players.forEach(p => {
+            roles.push({ "name": p.name, "role": p.role });
+        });
+
+        return roles;
+    }
+
     setRoles(roleChoices) {
         roleChoices.forEach(rc => {
             this.rolesAvailable.push(roles[rc]);
@@ -59,15 +68,10 @@ class Game {
             }
         });
 
-        this.players.forEach(p => {
-            console.log(p.name + ": " + p.killVotes);
-        });
-
         // if everyone has 1 vote, no one gets killed
         if (currentMaxVotes == 1) {
             return [];
         } else {
-            console.log(playersToBeKilled);
             return playersToBeKilled;
         }        
     }
@@ -151,7 +155,6 @@ class Game {
     // could also store playersToBeKilled as class property in determinePlayersToBeKilled() method
     // instead of sending to engine.js and then sending back here
     determineWinner(playersToBeKilled) {
-        console.log('winner being determined...');
         var winner = '';
 
         //let playersToBeKilled = this.determinePlayersToBeKilled();
@@ -166,16 +169,16 @@ class Game {
             }
         }
 
-        console.log('werewolf present? ' + werewolfIsPresent);
-
         // villager win
             // no werewolves & no one killed
             // if at least 1 werewolf dies (regardless of any villagers also dying)
         // werewolf win
             // at least 1 werewolf present and no werewolves die
+        // No winner
+            // No werewolves present, but at least one person was killed
 
-        if (!werewolfIsPresent && playersToBeKilled.length == 0) {
-            winner = 'village';
+        if (!werewolfIsPresent) {
+            winner = playersToBeKilled.length == 0 ? 'Village' : 'None';
         } else {
             let werewolfWasKilled = false;
 
@@ -187,12 +190,12 @@ class Game {
                 }
             }
 
-            console.log('werewolf killed? ' + werewolfWasKilled);
+            // TODO: Make an enum for teams
 
             if (werewolfWasKilled) {
-                winner = 'village';
+                winner = 'Village';
             } else {
-                winner = 'werewolf';
+                winner = 'Werewolf';
             }
         }
 
@@ -210,6 +213,8 @@ class Game {
             if (eval(action.condition.test)) {
                 r = this.doAction(player, action.condition.outcome);
                 r.action = action.condition.outcome.actionName;
+            } else {
+                r.action = action.actionName;
             }
         }
 
@@ -282,7 +287,7 @@ class Game {
             p1 = player;
             p2 = this.lookUpPlayerByName(action.selection[0]);
             // Since we want to show robber their new role, get p2's role and THEN swap roles.
-            var newRole = this.viewPlayerRole(p1, action);
+            //var newRole = this.viewPlayerRole(p1, action);
         } else if (action.target == "other") {
             p1 = this.lookUpPlayerByName(action.selection[0]);
             p2 = this.lookUpPlayerByName(action.selection[1]);
@@ -293,9 +298,9 @@ class Game {
         p2.role = temp;
 
         if (action.target == "self") {
-            return newRole;
+            return { "swaps": [p2.name], "newRole": p1.role };
         } else if (action.target == "other") {
-            return null;
+            return { "swaps": [p1.name, p2.name] };
         }
     }
 

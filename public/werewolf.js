@@ -102,8 +102,20 @@ document.addEventListener('DOMContentLoaded', function () {
 
         displayRolesInGame(msg.rolesInGame);
 
+        // set up role order
+        var roleOrderDiv = document.getElementById("role_order");
+        var uniqueRoles = new Set();
+        for (var key in Object.keys(msg.rolesInGame)) {
+            if (msg.rolesInGame.hasOwnProperty(key)) {  // only include roles present in current game
+                let role = msg.rolesInGame[key].name;
+                if (!uniqueRoles.has(role)) {   // ignore duplicate roles
+                    roleOrderDiv.innerHTML += "<br>" + role;
+                    uniqueRoles.add(role);
+                }
+            }
+        }
+
         player.role = msg.role;
-        console.log('Role acquired: ' + msg.role.name);
 
         let playerRoleDiv = document.getElementById("player_role_div");
         playerRoleDiv.style.display = null;
@@ -170,12 +182,12 @@ document.addEventListener('DOMContentLoaded', function () {
         // display role order
         var roleOrderDiv = document.getElementById("role_order");
         roleOrderDiv.style.display = null;
-        for (var key in roles) {
-            if (roles.hasOwnProperty(key)) {
-                console.log(key);
-                roleOrderDiv.innerHTML += "<br>" + key;
-            }
-        }
+        // for (var key in roles) {
+        //     // only host has amountForGame
+        //     if (roles.hasOwnProperty(key) && roles[key].amountForGame > 0) {
+        //         roleOrderDiv.innerHTML += "<br>" + roles[key].name;
+        //     }
+        // }
         roleOrderDiv.innerHTML += "<br>";
 
         game.displayPlayerToKillOptions();
@@ -184,12 +196,8 @@ document.addEventListener('DOMContentLoaded', function () {
     socket.on('gameResults', (msg) => {
         // 'gameResults', { "playersToBeKilled": playersToBeKilled, "winner": winner }
         console.log(msg.winner + " wins");
-        //game.displayGameResults(msg);
+        game.displayGameResults(msg);
     });
-
-    socket.on('testEvent', (msg) => {
-        console.log(msg);
-    })
 
     //
     // Bindings
