@@ -122,6 +122,12 @@ class Game {
 
         document.getElementById('actions_container').innerHTML = actionObj.actionName;
 
+        if (actionObj.target == "middle") {
+            document.getElementById('actions_container').innerHTML = `<b>${actionObj.actionName}</b>`;
+            this.socket.emit('actionChoice', { "action": actionObj });
+            return;
+        }
+
         let chooseDiv = this.generateChooseOtherPlayersDiv();
         let submitBtn = this.generateSubmitButton();
 
@@ -215,6 +221,10 @@ class Game {
         if (result.newRole) {
             resultsDiv.innerHTML += `Role acquired: ${result.newRole.name}<br>`;
         }
+
+        if (result.message) {
+            resultsDiv.innerHTML += result.message;
+        }
     }
 
     displayPlayerToKillOptions() {
@@ -263,6 +273,15 @@ class Game {
         if (gameResults.winner) {
             gameResultsDiv.innerHTML += "<br><br>";
             gameResultsDiv.innerHTML += `<b>Winning team:</b> ${gameResults.winner}`;
+        }
+
+        if (gameResults.finalRoles) {
+            gameResultsDiv.innerHTML += "<br><br>";
+            gameResultsDiv.innerHTML += "<b>Final roles:</b>";
+            gameResults.finalRoles.forEach(el => {
+                gameResultsDiv.innerHTML += "<br>";
+                gameResultsDiv.innerHTML += `${el.name}: ${el.role.name}`;
+            })
         }
     }
 

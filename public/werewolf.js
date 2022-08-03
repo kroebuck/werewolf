@@ -205,8 +205,9 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     socket.on('gameResults', (msg) => {
-        // 'gameResults', { "playersToBeKilled": playersToBeKilled, "winner": winner }
+        // 'gameResults', { "playersToBeKilled": String[], "winner": String, "finalRoles": String[] }
         console.log(msg.winner + " wins");
+        console.log(msg);
         game.displayGameResults(msg);
     });
 
@@ -355,7 +356,6 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function updateStartingRoleSelections(selections) {
-        console.log(selections);
         var count = 0;
         for (var key in selections) {
             // Update amount of each role selected

@@ -164,6 +164,13 @@ Currently, any preprocessable actions are processed during `game.startNight()` a
 
 
 ## Ideas for the webapp
+- Add rest of roles to roles.json
+	- Will need to implement functionality throughout app as well
+- Default role selections button
+	- Fill in roles according to player count:
+		- 3 players: 2 werewolves, seer, robber, troublemaker, villager
+		- 4 players: +1 villager
+		- 5 players: +2 villagers
 
 ### Timer for voting
 
@@ -175,6 +182,7 @@ What to do if timer runs out and no vote is cast?
 - Base killing off votes that WERE cast
 
 ### Improved game results
+Group players by team at end and nicely display winning team(s) and losing team(s)
 
 Send clients back info about how many votes each player got and who voted for them.
 

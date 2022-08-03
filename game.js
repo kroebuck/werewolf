@@ -265,14 +265,14 @@ class Game {
         let middleRoles = [];
 
         // create deep copy
-        let availRolesCopy = JSON.parse(JSON.stringify(this.rolesAvailable));
+        let rolesAvailableCopy = JSON.parse(JSON.stringify(this.rolesAvailable));
 
         // choose roles at random
         for (let i = 0; i < action.count; i++) {
-            let roleIndex = Math.floor(Math.random() * availRolesCopy.length);
+            let roleIndex = Math.floor(Math.random() * rolesAvailableCopy.length);
             //middleRoles.push(availRolesCopy[roleIndex]);
-            middleRoles.push(availRolesCopy[roleIndex].name);
-            availRolesCopy.splice(roleIndex, 1);
+            middleRoles.push(rolesAvailableCopy[roleIndex].name);
+            rolesAvailableCopy.splice(roleIndex, 1);
         }
 
         return { "middleRoles": middleRoles };
@@ -291,16 +291,27 @@ class Game {
         } else if (action.target == "other") {
             p1 = this.lookUpPlayerByName(action.selection[0]);
             p2 = this.lookUpPlayerByName(action.selection[1]);
+        } else if (action.target == "middle") {
+            p1 = player;
+            let index = Math.floor(Math.random() * this.rolesAvailable.length);
+            let roleFromMiddle = this.rolesAvailable.splice(index, 1)[0];
+            this.rolesAvailable.push(p1.role);
+            p1.role = roleFromMiddle;
         }
 
-        let temp = p1.role;
-        p1.role = p2.role;
-        p2.role = temp;
+        // If swap is between two players, perform swap
+        if (p1 != null && p2 != null) {
+            let temp = p1.role;
+            p1.role = p2.role;
+            p2.role = temp;
+        }
 
         if (action.target == "self") {
             return { "swaps": [p2.name], "newRole": p1.role };
         } else if (action.target == "other") {
             return { "swaps": [p1.name, p2.name] };
+        } else if (action.target == "middle") {
+            return { "message": "Swapped roles with random card in middle. New role is hidden to you." };
         }
     }
 

@@ -68,7 +68,7 @@ class Engine {
                 p.socket.emit('gameResults', { 
                     "playersToBeKilled": playerNamesToBeKilled,
                     "winner": winner,
-                    "playerFinalRoles": finalRoles }
+                    "finalRoles": finalRoles }
                     );
             });
         } else {
@@ -216,6 +216,8 @@ class Engine {
                 if (msg) {
                     p.setActionChoice(msg.action);
                 }
+
+                console.log(game.actionChoiceResponses + " / " + game.players.length);
 
                 if (game.actionChoiceResponses == game.players.length) {
                     game.continueNight();
