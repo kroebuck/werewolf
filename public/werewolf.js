@@ -53,6 +53,12 @@ document.addEventListener('DOMContentLoaded', function () {
         playerNamesInRoom = res.playerNames;
         game.playerNames = playerNamesInRoom
         displayPlayers(res.playerNames);
+        document.getElementById("required_role_amount").innerHTML = "Roles required: " + game.getRequiredRoleAmount();
+
+        // send host's current role selections to others in room
+        if (player.isHost) {
+            emitRoleSelections();
+        }
     });
 
     socket.on('roomJoinStatus', (res) => {
@@ -85,6 +91,11 @@ document.addEventListener('DOMContentLoaded', function () {
             displayWaitingRoom();
         }
     });
+
+    // host has made a change to the starting role selection, update values accordingly
+    socket.on('startingRolesUpdate', (selections) => {
+        updateStartingRoleSelections(selections);
+    })
 
     socket.on('gameStartStatus', (res) => {
         if (res.isReady == true) {
@@ -298,15 +309,16 @@ document.addEventListener('DOMContentLoaded', function () {
         addBtn.id = `${role}_add_button`;
         addBtn.innerText = "+";
 
-        let roleAmountDiv = document.getElementById('role_amount_div');
-        roleAmountDiv.innerHTML = `Roles selected: 0 / ${game.getRequiredRoleAmount()}`;
+        let roleAmountDiv = document.getElementById('current_role_amount');
+        roleAmountDiv.innerHTML = `Roles selected: 0`;
 
         // Increase role count by 1
         addBtn.onclick = () => {
             roles[role].amountForGame++;
             let roleDiv = document.getElementById(`role_${role}`);
             roleDiv.getElementsByClassName("role-amount")[0].innerHTML = roles[role].amountForGame;
-            roleAmountDiv.innerHTML = `Roles selected: ${getRoleSelectionCount()} / ${game.getRequiredRoleAmount()}`;
+            roleAmountDiv.innerHTML = `Roles selected: ${getRoleSelectionCount()}`;
+            emitRoleSelections();
         }
 
         let rmvBtn = document.createElement("button");
@@ -319,13 +331,41 @@ document.addEventListener('DOMContentLoaded', function () {
                 roles[role].amountForGame--;
                 let roleDiv = document.getElementById(`role_${role}`);
                 roleDiv.getElementsByClassName("role-amount")[0].innerHTML = roles[role].amountForGame;
-                roleAmountDiv.innerHTML = `Roles selected: ${getRoleSelectionCount()} / ${game.getRequiredRoleAmount()}`;
+                roleAmountDiv.innerHTML = `Roles selected: ${getRoleSelectionCount()}`;
+                emitRoleSelections()
             } else {
                 console.log("There are already 0 of that role");
             }
         }
 
         return [addBtn, rmvBtn];
+    }
+
+    function emitRoleSelections() {
+        var selections = {};
+
+        for (var key in roles) {
+            if (roles.hasOwnProperty(key)) {
+                let role = roles[key];
+                selections[role.id] = role.amountForGame;
+            }
+        }
+
+        socket.emit('startingRoleSelection', selections);
+    }
+
+    function updateStartingRoleSelections(selections) {
+        console.log(selections);
+        var count = 0;
+        for (var key in selections) {
+            // Update amount of each role selected
+            let roleDiv = document.getElementById(`role_${key}`);
+            roleDiv.getElementsByClassName("role-amount")[0].innerHTML = selections[key];
+
+            // Update total current role amount
+            count += selections[key];
+        }
+        document.getElementById("current_role_amount").innerHTML = "Roles selected: " + count;
     }
 
     function getRoleSelectionCount() {

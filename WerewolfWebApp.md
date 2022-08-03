@@ -165,9 +165,6 @@ Currently, any preprocessable actions are processed during `game.startNight()` a
 
 ## Ideas for the webapp
 
-### Host options before game start
-- Send role selection info to other in room as host is selecting them
-
 ### Timer for voting
 
 The players shouldn't need more than a few minutes (say 5?).

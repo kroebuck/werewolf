@@ -190,6 +190,13 @@ class Engine {
             }           
         })
 
+        // host has added/removed a role for the upcoming game
+        socket.on('startingRoleSelection', (roles) => {
+            this.startingRoleSelections = roles;
+            // send current role selection to everyone else
+            p.socket.broadcast.emit('startingRolesUpdate', roles);
+        })
+
         socket.on('gameStart', (obj) => {
             if (p.room != null && p.host) {
                 var game = new Game();
