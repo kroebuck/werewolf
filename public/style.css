@@ -1,18 +1,36 @@
+:root {
+	--role-div-padding: 8px;
+}
+
+.role-div {
+	margin: 6px;
+	border: 0.5px solid;
+}
+
 .role-name {
 	float:  left;
+	padding: var(--role-div-padding);
 }
 
 .role-info {
 	float:  right;
 }
 
+.role-selection-container {
+	margin-right: 2%;
+	margin-top: var(--role-div-padding);
+  	float: right;
+}
+
 .role-amount {
-	float:	right;
-	padding-right:  5px;
+	/* float:	right;
+	padding-right:  5px; */
+	display: inline-block;
 }
 
 .role-selection {
-	float: 	right;
+	/* float: 	right; */
+	display: inline-block;
 }
 
 .clear {

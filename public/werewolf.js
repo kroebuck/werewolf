@@ -39,6 +39,18 @@ document.addEventListener('DOMContentLoaded', function () {
                 roleDiv.style.display = null;
                 rolesDiv.appendChild(roleDiv);
 
+                // Click role to toggle description display
+                roleDiv.onclick = (event) => {
+                    // Did user click in roleSelectionContainer or one of its child elements?
+                    let didClickInRoleSelection = Boolean(event.target.closest(".role-selection-container"));
+
+                    // If not, toggle description display
+                    if (!didClickInRoleSelection) {
+                        let displayState = roleDiv.querySelector('.role-desc').style.display;
+                        roleDiv.querySelector('.role-desc').style.display = displayState == "none" ? "block" : "none";
+                    }
+                }
+
                 // Display role selection buttons to host:
                 let roleSelectionButtons = generateRoleSelectionButtons(key);
                 let roleSelectionDiv = roleDiv.getElementsByClassName('role-selection')[0];
@@ -220,8 +232,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
         var roomCode = document.getElementById('room_code').value.trim();
         document.getElementById('room_code').value = roomCode;
-
-        console.log(name == '');
 
         if (name != '' && roomCode != '') {
             socket.emit('roomJoin', { 'name': name, 'roomCode': roomCode });
