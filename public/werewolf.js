@@ -206,8 +206,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     socket.on('gameResults', (msg) => {
         // 'gameResults', { "playersToBeKilled": String[], "winner": String, "finalRoles": String[] }
-        console.log(msg.winner + " wins");
-        console.log(msg);
+        console.log("Winner(s): " + msg.winners);
         game.displayGameResults(msg);
     });
 
@@ -222,7 +221,9 @@ document.addEventListener('DOMContentLoaded', function () {
         var roomCode = document.getElementById('room_code').value.trim();
         document.getElementById('room_code').value = roomCode;
 
-        if (name != '' || roomCode != '') {
+        console.log(name == '');
+
+        if (name != '' && roomCode != '') {
             socket.emit('roomJoin', { 'name': name, 'roomCode': roomCode });
         } else {
             console.log('You must enter a name and room code.')
@@ -232,6 +233,7 @@ document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('create_room').onclick = () => {
         var name = document.getElementById('char_name').value.trim();
         document.getElementById('char_name').value = name;
+
         if (name != '') {
             socket.emit('roomCreate', {'name': name});
         } else {
@@ -281,7 +283,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function displayRolesInGame(rolesInGame) {
         var rolesDiv = document.getElementById('roles_div');
-        rolesDiv.innerHTML = "<b>Roles in game:</b>";
+        rolesDiv.innerHTML = "<b>Roles in game</b>";
 
         // Get counts of roles
         var map = {}

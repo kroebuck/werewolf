@@ -171,7 +171,7 @@ Currently, any preprocessable actions are processed during `game.startNight()` a
 		- 3 players: 2 werewolves, seer, robber, troublemaker, villager
 		- 4 players: +1 villager
 		- 5 players: +2 villagers
-
+- Add drop down descriptions for the roles so the text descriptions aren't cumbersome
 ### Timer for voting
 
 The players shouldn't need more than a few minutes (say 5?).

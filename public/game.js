@@ -256,7 +256,7 @@ class Game {
     displayGameResults(gameResults) {
         let gameResultsDiv = document.getElementById("game_results_container");
         gameResultsDiv.style.display = null;
-        gameResultsDiv.innerHTML = "Players Killed:";
+        gameResultsDiv.innerHTML = "<b>Players Killed</b>";
 
         if (gameResults.playersToBeKilled) {
             if (gameResults.playersToBeKilled.length == 0) {
@@ -270,14 +270,17 @@ class Game {
             }
         }
 
-        if (gameResults.winner) {
+        if (gameResults.winners) {
             gameResultsDiv.innerHTML += "<br><br>";
-            gameResultsDiv.innerHTML += `<b>Winning team:</b> ${gameResults.winner}`;
+            gameResultsDiv.innerHTML += "<b>Winning team</b>";
+            gameResults.winners.forEach(team => {
+                gameResultsDiv.innerHTML += `<br>${team}`;
+            });
         }
 
         if (gameResults.finalRoles) {
             gameResultsDiv.innerHTML += "<br><br>";
-            gameResultsDiv.innerHTML += "<b>Final roles:</b>";
+            gameResultsDiv.innerHTML += "<b>Final Roles</b>";
             gameResults.finalRoles.forEach(el => {
                 gameResultsDiv.innerHTML += "<br>";
                 gameResultsDiv.innerHTML += `${el.name}: ${el.role.name}`;

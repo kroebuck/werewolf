@@ -155,17 +155,22 @@ class Game {
     // could also store playersToBeKilled as class property in determinePlayersToBeKilled() method
     // instead of sending to engine.js and then sending back here
     determineWinner(playersToBeKilled) {
-        var winner = '';
-
-        //let playersToBeKilled = this.determinePlayersToBeKilled();
-
-        let werewolfIsPresent = false;
+        var winners = [];
 
         // Check if any players are a werewolf
+        let werewolfIsPresent = false;
         for (let i = 0; i < this.players.length; i++) {
             if (this.players[i].role.id == "werewolf") {
                 werewolfIsPresent = true;
-                break;
+            }
+        }
+
+        // Check if a werewolf died
+        var tannerWasKilled = false;
+        for (let i = 0; i < playersToBeKilled.length; i++) {
+            if (playersToBeKilled[i].role.id == "tanner") {
+                winners.push(playersToBeKilled[i].name + " (Tanner)");  // TODO: Push only name here, adding tanner info is hacky
+                tannerWasKilled = true;
             }
         }
 
@@ -173,12 +178,17 @@ class Game {
             // no werewolves & no one killed
             // if at least 1 werewolf dies (regardless of any villagers also dying)
         // werewolf win
+            // no tanner deaths
             // at least 1 werewolf present and no werewolves die
+        // tanner win
+            // tanner dies
         // No winner
-            // No werewolves present, but at least one person was killed
+            // No werewolves present, but at least one person was killed (not tanner)
 
         if (!werewolfIsPresent) {
-            winner = playersToBeKilled.length == 0 ? 'Village' : 'None';
+            if (playersToBeKilled.length == 0) {
+                winners.push("Village");
+            }
         } else {
             let werewolfWasKilled = false;
 
@@ -193,13 +203,15 @@ class Game {
             // TODO: Make an enum for teams
 
             if (werewolfWasKilled) {
-                winner = 'Village';
+                winners.push("Village");
             } else {
-                winner = 'Werewolf';
+                if (!tannerWasKilled) {
+                    winners.push("Werewolf");
+                }
             }
         }
 
-        return winner;
+        return winners;
     }
 
     // The parameter "action" should be one of the elements of the array associated with the "actions" attribute. Explicitly:
@@ -286,8 +298,6 @@ class Game {
         if (action.target == "self") {
             p1 = player;
             p2 = this.lookUpPlayerByName(action.selection[0]);
-            // Since we want to show robber their new role, get p2's role and THEN swap roles.
-            //var newRole = this.viewPlayerRole(p1, action);
         } else if (action.target == "other") {
             p1 = this.lookUpPlayerByName(action.selection[0]);
             p2 = this.lookUpPlayerByName(action.selection[1]);

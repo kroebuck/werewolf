@@ -54,7 +54,7 @@ class Engine {
         let finalRoles = game.getRoles();
 
         if (playersToBeKilled) {
-            let winner = game.determineWinner(playersToBeKilled);
+            let winners = game.determineWinner(playersToBeKilled);
 
             // Construct array of player names from array of player objects
             var playerNamesToBeKilled = [];
@@ -67,7 +67,7 @@ class Engine {
             room.players.forEach(p => {
                 p.socket.emit('gameResults', { 
                     "playersToBeKilled": playerNamesToBeKilled,
-                    "winner": winner,
+                    "winners": winners,
                     "finalRoles": finalRoles }
                     );
             });
@@ -216,8 +216,6 @@ class Engine {
                 if (msg) {
                     p.setActionChoice(msg.action);
                 }
-
-                console.log(game.actionChoiceResponses + " / " + game.players.length);
 
                 if (game.actionChoiceResponses == game.players.length) {
                     game.continueNight();
