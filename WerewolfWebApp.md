@@ -171,7 +171,7 @@ Currently, any preprocessable actions are processed during `game.startNight()` a
 		- 3 players: 2 werewolves, seer, robber, troublemaker, villager
 		- 4 players: +1 villager
 		- 5 players: +2 villagers
-- Add drop down descriptions for the roles so the text descriptions aren't cumbersome
+
 ### Timer for voting
 
 The players shouldn't need more than a few minutes (say 5?).
@@ -191,6 +191,8 @@ Keep track of the original roles, each action performed, and the end roles so th
 ### Sessions
 
 Instead of simply kicking a player from the room if they disconnect, implement sessions so that the player has some amount of time to rejoin before `engine.js` kicks them out.
+
+Remember name of player and allow disconnected player(s) to join again using that name
 
 ### Improve the presentation of the HTML
 
